@@ -14,7 +14,7 @@ using `theme.ts` in this folder as the single source of visual truth.
 sliders, tasks, day picker, timer and the day/night toggle all work). `screens/` holds a
 PNG of every screen. `TICKETS.md` is the Jira-ready breakdown.
 
-## Fidelity
+## Fidelity 
 
 **High fidelity.** Colors, type, spacing, radii and copy are final. Recreate pixel-close
 using MUI components with the custom theme applied — do not restyle from scratch and do not
