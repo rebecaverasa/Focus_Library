@@ -11,8 +11,11 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.102.2",
+    "axios": "^1.19.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "^5.18.6",
