@@ -8,10 +8,10 @@ Fixes # (issue number)
 
 Check the options that apply:
 
-- [ ] 🐛 Bug fix (non-breaking change fixing an issue)
-- [ ] ✨ New feature (non-breaking change adding functionality)
-- [ ] 💥 Breaking change (fix or feature causing existing functionality to break)
-- [ ] 🧹 Chore / Refactor / Documentation update
+- [ ] Bug fix (non-breaking change fixing an issue)
+- [ ] New feature (non-breaking change adding functionality)
+- [ ] Breaking change (fix or feature causing existing functionality to break)
+- [ ] Chore / Refactor / Documentation update
 
 ## Evidences
 

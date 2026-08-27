@@ -1,0 +1,23 @@
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Bytecode / cache do Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Ferramentas / caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Editor
+.vscode/
