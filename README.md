@@ -1,147 +1,145 @@
 # Focus Library
 
-> Nome provisório.
+> Provisional name.
 
-Uma biblioteca/sala de estudos virtual, com tema de biblioteca clássica/aconchegante: mixer
-de sons ambiente (páginas virando, chuva na janela, relógio de parede, sussurros ao fundo,
-lareira, teclado de laptop) para acompanhar estudo/trabalho, tarefas por dia, timer de foco
-(Pomodoro), histórico de sessões e, futuramente, salas de estudo compartilhadas com presença
-em tempo real.
+A virtual study library/room, with a classic/cozy library theme: ambient sound mixer
+(pages turning, rain on the window, wall clock, background whispers, fireplace, laptop
+keyboard) to accompany studying/working, daily tasks, focus timer (Pomodoro), session
+history, and, in the future, shared study rooms with real-time presence.
 
-**Objetivo do projeto**: aprofundar conhecimentos fullstack (Python + TypeScript/React/Material
-UI) através de um projeto pessoal completo, usando apenas ferramentas/serviços gratuitos.
+**Project goal**: deepen fullstack knowledge (Python + TypeScript/React/Material UI)
+through a complete personal project, using only free tools/services.
 
-Este projeto pretende utilizar persistência de dados por usuário, tarefas, timer de
-produtividade e presença em tempo real — o que justifica uma stack fullstack completa
-(backend, banco, mensageria, tempo real), além de login com a conta Google do usuário.
+This project intends to use per-user data persistence, tasks, a productivity timer, and
+real-time presence — which justifies a complete fullstack stack (backend, database,
+messaging, real-time), as well as login with the user's Google account.
 
-> Documentação relacionada:
-> - **[Documentation/DESIGN.md](Documentation/DESIGN.md)** — prompt de design original, paleta,
->   tipografia, especificação de cada tela, interações, state e exceções técnicas de UI.
-> - **[Documentation/ROADMAP.md](Documentation/ROADMAP.md)** — plano de implementação, backlog
->   consolidado (Epics/tickets) e tickets de design detalhados, prontos para Jira.
-> - Assets de design (screenshots, protótipo interativo `.dc.html`) ficam em
+> Related documentation:
+> - **[Documentation/DESIGN.md](Documentation/DESIGN.md)** — original design prompt, palette,
+>   typography, screen-by-screen specification, interactions, state, and UI technical exceptions.
+> - **[Documentation/ROADMAP.md](Documentation/ROADMAP.md)** — implementation plan, consolidated
+>   backlog (Epics/tickets), and detailed design tickets, ready for Jira.
+> - Design assets (screenshots, interactive `.dc.html` prototype) live in
 >   `Documentation/Design/`.
 
 ---
 
-## 1. Conceito
+## 1. Concept
 
-Uma biblioteca/sala de estudos virtual, com tema de biblioteca: mixer de sons ambiente
-(páginas virando, chuva na janela, relógio de parede, sussurros ao fundo, lareira, teclado de
-laptop) para acompanhar estudo/trabalho. Este projeto pretende utilizar persistência de dados
-por usuário, tarefas, timer de produtividade e presença em tempo real — o que justifica uma
-stack fullstack completa (backend, banco, mensageria, tempo real), além de login com a conta
-Google do usuário.
+A virtual study library/room, with a library theme: ambient sound mixer (pages turning,
+rain on the window, wall clock, background whispers, fireplace, laptop keyboard) to
+accompany studying/working. This project intends to use per-user data persistence, tasks,
+a productivity timer, and real-time presence — which justifies a complete fullstack stack
+(backend, database, messaging, real-time), as well as login with the user's Google account.
 
-## 2. Funcionalidades
+## 2. Features
 
-**Fase 1 — MVP**:
-- Mixer de sons ambiente da biblioteca (volume independente por som: páginas, chuva, relógio,
-  sussurros, lareira, etc.)
-- Autenticação: Login com Google (dados do usuário salvos na nuvem, acessíveis de qualquer
-  dispositivo)
-- Todo list persistida por usuário
-- Presets: salvar sua combinação de volumes favorita
+**Phase 1 — MVP**:
+- Library ambient sound mixer (independent volume per sound: pages, rain, clock,
+  whispers, fireplace, etc.)
+- Authentication: Google login (user data saved in the cloud, accessible from any
+  device)
+- Per-user persisted to-do list
+- Presets: save your favorite volume combination
 
-**Fase 2**:
-- Pomodoro / timer de foco vinculado às tarefas
-- Histórico de sessões de foco (dashboard com gráfico)
-- Resumo semanal automático (email): tarefas concluídas + minutos de foco
+**Phase 2**:
+- Pomodoro / focus timer linked to tasks
+- Focus session history (dashboard with chart)
+- Automatic weekly summary (email): completed tasks + focus minutes
 
-**Fase 3** (opcional, mas valiosa para portfólio):
-- "Salas" de estudo compartilhadas: usuários entram numa sala temática (ex. "Sala de Leitura
-  Silenciosa", "Chuva na Ala Oeste", "Sala de Estudos Noturna") e veem em tempo real quantas
-  outras pessoas estão estudando ali
+**Phase 3** (optional, but valuable for portfolio):
+- Shared study "rooms": users join a themed room (e.g. "Silent Reading Room",
+  "Rain in the West Wing", "Night Study Room") and see in real time how many
+  other people are studying there
 
-## 3. Autenticação — fluxo OAuth2
+## 3. Authentication — OAuth2 flow
 
-Fluxo padrão OAuth2 para SPA ("Sign in with Google"):
+Standard OAuth2 flow for SPA ("Sign in with Google"):
 
-1. Frontend usa `@react-oauth/google` (Google Identity Services) para renderizar o botão de login.
-2. Ao autenticar, o Google retorna um ID token (JWT assinado, com email, nome, foto, `sub` =
-   ID único do usuário no Google).
-3. Frontend envia esse token para `POST /auth/google` no backend.
-4. Backend valida o token com a lib `google-auth` (assinatura + audience = Client ID do projeto).
-5. Backend faz upsert do usuário no Postgres (chave: `google_sub`) e emite um JWT próprio
-   (access + refresh) para as próximas chamadas.
-6. Dados (tarefas, presets, sessões) ficam vinculados ao `google_sub` no Postgres — por isso
-   funcionam em qualquer aparelho.
+1. Frontend uses `@react-oauth/google` (Google Identity Services) to render the login button.
+2. Upon authentication, Google returns an ID token (signed JWT, with email, name, photo, `sub` =
+   unique user ID on Google).
+3. Frontend sends that token to `POST /auth/google` on the backend.
+4. Backend validates the token with the `google-auth` library (signature + audience = project's Client ID).
+5. Backend upserts the user in Postgres (key: `google_sub`) and issues its own JWT
+   (access + refresh) for subsequent calls.
+6. Data (tasks, presets, sessions) is linked to `google_sub` in Postgres — that's why it
+   works across any device.
 
-**Configuração**: Google Cloud Console → criar projeto → configurar OAuth consent screen →
-criar OAuth Client ID (Web application) → registrar origens autorizadas (`localhost:5173` em
-dev, domínio da Vercel em produção). Sem custo.
+**Setup**: Google Cloud Console → create project → configure OAuth consent screen →
+create OAuth Client ID (Web application) → register authorized origins (`localhost:5173` in
+dev, Vercel domain in production). No cost.
 
-**Decisão de escopo**: login somente via Google, sem email/senha tradicional — evita construir
-reset de senha, verificação de email, hashing etc., sem perder o valor de portfólio do fluxo
-OAuth2.
+**Scope decision**: login only via Google, without traditional email/password — avoids building
+password reset, email verification, hashing, etc., without losing the portfolio value of the
+OAuth2 flow.
 
-## 4. Arquitetura (visão geral)
+## 4. Architecture (overview)
 
 ```
 [Frontend React/TS - Vercel]
         |
         | REST + WebSocket
         v
-[FastAPI - k3s no Oracle Cloud]
+[FastAPI - k3s on Oracle Cloud]
     |         |
-    |         +--> [Redis] (cache + Pub/Sub para WebSocket entre réplicas)
-    |         +--> [RabbitMQ] (broker de filas)
+    |         +--> [Redis] (cache + Pub/Sub for WebSocket across replicas)
+    |         +--> [RabbitMQ] (queue broker)
     |
-    +--> [PostgreSQL] (usuários, tarefas, sessões, presets)
+    +--> [PostgreSQL] (users, tasks, sessions, presets)
 
-[Celery Worker] <-- consome fila --> [RabbitMQ]
-[Celery Beat] --> agenda job semanal (resumo de produtividade)
+[Celery Worker] <-- consumes queue --> [RabbitMQ]
+[Celery Beat] --> schedules weekly job (productivity summary)
 ```
 
-## 5. Stack Tecnológica
+## 5. Tech Stack
 
-| Camada | Tecnologia | Observação |
+| Layer | Technology | Notes |
 |---|---|---|
-| Backend API | Python + FastAPI | REST + docs automáticas (Swagger) |
-| Autenticação | Google OAuth2 + JWT próprio | `google-auth` (backend), `@react-oauth/google` (frontend) |
-| Tempo real | WebSocket (FastAPI) + Redis Pub/Sub | sincroniza presença entre réplicas do backend |
-| Fila / tarefas assíncronas | Celery + RabbitMQ | processamento de sessões, resumo semanal |
-| Agendamento | Celery Beat | dispara jobs periódicos |
-| Banco relacional | PostgreSQL | dados persistentes |
-| Cache | Redis | cache de queries + broker do Pub/Sub |
-| Frontend | React + TypeScript (Vite) | mixer de áudio, todo list, dashboard |
-| Gráficos | Recharts / Chart.js | histórico de foco |
-| Notificações | Telegram Bot API | resumo semanal, mais simples que SMTP |
-| Testes backend | pytest + httpx | |
-| Testes frontend | Vitest + Testing Library, Playwright (E2E) | |
+| Backend API | Python + FastAPI | REST + automatic docs (Swagger) |
+| Authentication | Google OAuth2 + own JWT | `google-auth` (backend), `@react-oauth/google` (frontend) |
+| Real-time | WebSocket (FastAPI) + Redis Pub/Sub | synchronizes presence across backend replicas |
+| Queue / async tasks | Celery + RabbitMQ | session processing, weekly summary |
+| Scheduling | Celery Beat | triggers periodic jobs |
+| Relational database | PostgreSQL | persistent data |
+| Cache | Redis | query cache + Pub/Sub broker |
+| Frontend | React + TypeScript (Vite) | audio mixer, to-do list, dashboard |
+| Charts | Recharts / Chart.js | focus history |
+| Notifications | Telegram Bot API | weekly summary, simpler than SMTP |
+| Backend tests | pytest + httpx | |
+| Frontend tests | Vitest + Testing Library, Playwright (E2E) | |
 
 ## 6. DevOps
 
-| Peça | Escolha | Gratuito? |
+| Piece | Choice | Free? |
 |---|---|---|
-| Containerização | Docker + docker-compose (dev local) | sim |
-| Orquestração | Kubernetes (k3s) rodando em VMs ARM do Oracle Cloud Always Free | sim, permanente (alternativa para aprender sem infra: kind/minikube local) |
-| Registry de imagens | GitHub Container Registry (ghcr.io) | sim |
-| CI | GitHub Actions (lint, testes, build da imagem) | sim |
-| CD | GitHub Actions ou ArgoCD (GitOps) aplicando no cluster | sim |
-| Deploy frontend | Vercel | sim, e é o mais usado do mercado para apps React/TS |
-| Deploy backend (alternativa simples antes do k8s) | Render free tier | sim |
-| Observabilidade — métricas | Prometheus + Grafana self-hosted no cluster | sim |
-| Observabilidade — logs | Grafana Loki | sim |
-| Observabilidade — erros | Sentry (free tier) | sim |
-| Observabilidade — uptime | UptimeRobot | sim |
+| Containerization | Docker + docker-compose (local dev) | yes |
+| Orchestration | Kubernetes (k3s) running on Oracle Cloud Always Free ARM VMs | yes, permanently (alternative for learning without infra: kind/minikube local) |
+| Image registry | GitHub Container Registry (ghcr.io) | yes |
+| CI | GitHub Actions (lint, tests, image build) | yes |
+| CD | GitHub Actions or ArgoCD (GitOps) applying to the cluster | yes |
+| Frontend deploy | Vercel | yes, and it's the most widely used in the market for React/TS apps |
+| Backend deploy (simple alternative before k8s) | Render free tier | yes |
+| Observability — metrics | Prometheus + Grafana self-hosted on the cluster | yes |
+| Observability — logs | Grafana Loki | yes |
+| Observability — errors | Sentry (free tier) | yes |
+| Observability — uptime | UptimeRobot | yes |
 
-**Nota sobre Kubernetes gratuito**: não existe cluster K8s gerenciado 24/7 grátis para sempre
-nas grandes clouds (GCP/AWS/Azure só dão crédito por tempo limitado). O caminho usado na
-prática é subir k3s em VMs do Oracle Cloud Always Free (permanentes, sem prazo). Alternativa
-para aprender sem se preocupar com infra: kind/minikube local.
+**Note on free Kubernetes**: there's no free-forever 24/7 managed K8s cluster on the
+major clouds (GCP/AWS/Azure only give credits for a limited time). The practical path used
+is to run k3s on Oracle Cloud Always Free VMs (permanent, no time limit). Alternative
+for learning without worrying about infra: kind/minikube local.
 
-## 7. Roadmap (visão de alto nível)
+## 7. Roadmap (high-level view)
 
-1. **MVP local**: FastAPI + Postgres + login Google + todo list + frontend com mixer de som —
-   tudo via docker-compose
-2. **Mensageria**: Celery + RabbitMQ para o resumo semanal (job assíncrono simples)
-3. **Tempo real**: WebSocket + Redis Pub/Sub para as salas compartilhadas
-4. **CI**: GitHub Actions rodando testes a cada PR
-5. **Deploy inicial**: Vercel (frontend) + Render/Oracle (backend) — versão "no ar"
-6. **Kubernetes + CD + Observabilidade**: migração do backend para k3s, adição de
+1. **Local MVP**: FastAPI + Postgres + Google login + to-do list + frontend with sound mixer —
+   all via docker-compose
+2. **Messaging**: Celery + RabbitMQ for the weekly summary (simple async job)
+3. **Real-time**: WebSocket + Redis Pub/Sub for shared rooms
+4. **CI**: GitHub Actions running tests on every PR
+5. **Initial deploy**: Vercel (frontend) + Render/Oracle (backend) — "live" version
+6. **Kubernetes + CD + Observability**: migrate the backend to k3s, add
    Prometheus/Grafana/Sentry
 
-> O detalhamento completo em epics/tickets, estimativas, dependências e timeline por semana
-> está em **[Documentation/ROADMAP.md](Documentation/ROADMAP.md)**.
+> Full detail in epics/tickets, estimates, dependencies, and week-by-week timeline
+> is in **[Documentation/ROADMAP.md](Documentation/ROADMAP.md)**.

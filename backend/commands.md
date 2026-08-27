@@ -6,6 +6,7 @@
 
 ## run fast api with reload uvicorn:
 
+- cd backend\app
 - with venv activated:
   uvicorn main:app --reload
 
