@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    shm_size: 128mb # Garante que queries pesadas não travem o Postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports: "5432:5432"
+    volumes: postgres_data:/var/lib/postgresql/data # ao dar um docker-compose down, os dados não são perdidos ao destruir o container
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379" # Porta padrão do Redis exposta
+    volumes:
+      - redis_data:/data # Garante que o cache ou filas persistam se o container reiniciar
+
+volumes:
+  postgres_data: # Inicializa o volume do banco
+  redis_data: # Inicializa o volume do Redis
+
