@@ -1,39 +1,57 @@
 services:
   db:
     image: postgres:16-alpine
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
-      interval: 5s # roda o comando "test" a cada 5 segundos
-      timeout: 5s # o tempo máximo que uma única execução do comando test pode levar antes de ser considerada falha por timeout
-      retries: 5 # quantas falhas consecutivas (cada uma separada pelo interval de 5s) são necessárias para o Docker marcar o container como unhealthy
     restart: always
     shm_size: 128mb # Garante que queries pesadas não travem o Postgres
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data # ao dar um docker-compose down, os dados não são perdidos ao destruir o container
-
-  api:
-    build:
-      context: # colocar aqui o dockerfile
-      dockerfile: Dockerfile
-    depends_on:
-      db:
-        condition: service_healthy
+      - pgdata:/var/lib/postgresql/data # persiste os dados entre "docker compose down"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s # roda o comando "test" a cada 5 segundos
+      timeout: 5s # tempo máximo que uma execução do test pode levar antes de falhar por timeout
+      retries: 5 # falhas consecutivas necessárias para o Docker marcar o container como unhealthy
 
   redis:
     image: redis:7-alpine
     restart: always
     ports:
-      - "6379:6379" # Porta padrão do Redis exposta
+      - "6379:6379" # porta padrão do Redis exposta
     volumes:
-      - redis_data:/data # Garante que o cache ou filas persistam se o container reiniciar
+      - redis_data:/data # garante que o cache/filas persistam se o container reiniciar
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env
+    environment:
+      # montadas a partir das variáveis do .env para apontar para os hostnames dos
+      # serviços dentro da rede do compose (db/redis), e não para localhost
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend/app:/app/app # hot-reload: monta o código sem precisar rebuildar a imagem
+    depends_on:
+      db:
+        condition: service_healthy # evita "connection refused" com o backend subindo antes do banco aceitar conexões
+      redis:
+        condition: service_healthy
 
 volumes:
-  postgres_data: # Inicializa o volume do banco
-  redis_data: # Inicializa o volume do Redis
-
+  pgdata: # inicializa o volume do banco
+  redis_data: # inicializa o volume do Redis
