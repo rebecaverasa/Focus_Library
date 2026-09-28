@@ -17,6 +17,8 @@ ENV PATH=/root/.local/bin:$PATH \
 
 COPY --from=builder /root/.local /root/.local
 COPY ./app ./app
+COPY ./alembic ./alembic
+COPY alembic.ini .
 
 EXPOSE 8000
 

@@ -46,6 +46,7 @@ services:
       - "8000:8000"
     volumes:
       - ../backend/app:/app/app # hot-reload: monta o código sem precisar rebuildar a imagem
+      - ../backend/alembic:/app/alembic # migrations geradas com --autogenerate ficam no host, não só no container
     depends_on:
       db:
         condition: service_healthy # evita "connection refused" com o backend subindo antes do banco aceitar conexões
