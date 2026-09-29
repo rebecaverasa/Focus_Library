@@ -26,7 +26,7 @@ jobs:
 
       - run: ruff check .
       - run: ruff format --check .
-      - run: pytest
+      - run: python -m pytest
 
   frontend:
     name: Frontend (lint + build)

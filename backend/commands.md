@@ -28,6 +28,14 @@ pip list
 
 pip freeze > requirements.txt
 
+## lint + tests (same checks as CI)
+
+- pip install -r requirements-dev.txt
+- ruff check .
+- ruff format --check .    (drop --check to auto-format)
+- python -m pytest         (use `-m pytest`, not the bare `pytest` command —
+  it's what puts backend/ on sys.path so `from app... import` resolves)
+
 ## alembic migrations
 
 DATABASE_URL/REDIS_URL come from backend/.env (host) — copy backend/.env.example first.
