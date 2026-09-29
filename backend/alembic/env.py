@@ -7,14 +7,13 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-
 from app.core.config import settings
+from app.db.base import Base
 
 # asyncpg is unreliable on Windows' default ProactorEventLoop (spurious
 # ConnectionResetError on connect); the selector loop doesn't have this issue.
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-from app.db.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
