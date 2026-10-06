@@ -11,6 +11,11 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/quicksand": "^5.3.0",
+    "@mui/material": "^9.4.0",
     "@tanstack/react-query": "^5.102.2",
     "axios": "^1.19.0",
     "react": "^19.2.8",
