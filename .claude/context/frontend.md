@@ -237,6 +237,10 @@ Abra o PNG do ticket **antes** de implementar e compare o resultado com ele no f
 - Timer: 25/5, tick a cada 1s, troca de fase reseta o relógio.
 - Responsivo: <1100px lista abaixo do timer e strip vira barra que abre a sheet; <720px
   cards de som em 2 colunas e picker vira Dialog full-width.
+- **Regra: responsivo em todo ticket.** Todo componente/tela já nasce funcionando em celular
+  (≥360px), tablet (768px) e desktop: mobile-first, breakpoints do tema, sem rolagem
+  horizontal, alvos ≥44px. Verifique com prints em 390, 768, 1024 e 1440px. FL-13 só valida
+  e ajusta o conjunto; não é onde o responsivo começa.
 
 ## State previsto (DESIGN.md §"State")
 
@@ -269,7 +273,7 @@ anônimo do navegador (header `X-Client-Id`, ver FE-3).
 | FE-3 ✅ | ID anônimo do navegador (UUID no localStorage + header `X-Client-Id` no axios) | FE-1 | — |
 | FL-4 ✅ | Audio engine (Web Audio, 6 loops) | FL-1 | — |
 | FL-5 ✅ | Ambience strip (mixer) | FL-4, FL-2 | 03 |
-| FL-6 | Mixer expandido (sheet) | FL-5 | 06 |
+| FL-6 ✅ | Mixer expandido (sheet) | FL-5 | 06 |
 | FL-7 | Lista de notas por dia | FL-2, FE-3, BE-13 | 03 |
 | FL-8 | Day picker | FL-7 | 04 |
 | FL-9 | Cenas (presets) | FL-5, FE-3, BE-15 | 03 |
@@ -321,5 +325,26 @@ Decidido em outubro/2026 (ROADMAP Parte 2, "Mudança de escopo"):
   `sceneName` por cena carregada/preset. A linha SCENES (chips) é do FL-9, não existe ainda.
   Clique no card (ícone + nome, `ButtonBase` irmão do slider, rótulo "Mute/Unmute {som}") faz
   `toggleMute`: nível > 0 → 0 guardando o nível; 0 → último não-zero (ou `DEFAULT_LEVELS`, ou 50).
-  A memória (`LastLevels`) é estado local do `AmbienceStrip`, não do engine; o FL-6 deve
-  levantá-la para um hook compartilhado quando a sheet existir.
+  A memória (`LastLevels`) vive no hook `useMixer()` (`features/mixer/useMixer.ts`:
+  `useAmbience()` + `toggleSound(id)`), chamado uma vez no `AmbienceStrip`, que passa o objeto
+  `mixer` para a `MixerSheet` (FL-6): sem níveis duplicados, memória única. A sheet é um
+  `Drawer anchor="bottom"` (paper 760px centralizado, raio 18 no topo, aria-labelledby) aberto
+  pelo botão "Expand mixer" (Maximize2) ao lado da legenda da strip; estado `open` local da
+  strip. Linhas (`SoundRow`) espelham o tint dos cards, com botão de mute irmão do slider. O
+  master não aparece na sheet (o design não mostra).
+
+## Responsivo (passada pós-FL-6)
+
+- Header: padding/gap menores no `xs`; wordmark some abaixo de `sm` (a marca "FL" continua com
+  `aria-label`); `NavTabs` é `variant="scrollable"` (rolagem interna só nas tabs, sem botões);
+  toggle dia/noite 44px no `xs`. `AppShell` usa `100dvh`.
+- `AmbienceStrip`: abaixo de 1100px (`WIDE` em `AmbienceStrip.tsx`) vira barra única — ponto,
+  título/legenda (quebra de linha livre), botão expandir 44px e play 44px; cards e master só
+  aparecem ≥1100px (por isso a regra de 2 colunas <720 ficou sem efeito: os cards não existem
+  ali). Padding inferior respeita `env(safe-area-inset-bottom)`.
+- `MixerSheet`: `maxHeight: calc(100dvh - 24px)` com rolagem interna; no `xs` a linha é
+  [plate+nome/descrição | valor] sobre slider de largura total (alvo 44px, thumb 20px em
+  `pointer: coarse`); de `sm` em diante o grid de 4 colunas do design.
+- Verificação headless: o Edge `--headless` impõe largura mínima ~500px, então para 360/390
+  use um HTML temporário com `<iframe>` na largura desejada servido de `frontend/public/`
+  (apague depois). `--force-dark-mode` é invertido/instável; use `--user-data-dir` novo por captura.

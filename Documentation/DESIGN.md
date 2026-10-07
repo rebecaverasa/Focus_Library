@@ -350,6 +350,10 @@ A tabela de tela-para-componente e as exceções técnicas, renderizadas para o 
 - **Responsivo** — abaixo de 1100px a lista de tarefas empilha sob o timer e a ambience strip
   colapsa numa única barra que abre a sheet. Abaixo de 720px os seis cards de som viram
   duas colunas.
+  **Regra do projeto:** todo componente e toda tela precisam funcionar e ficar bem
+  posicionados em celular (a partir de 360px), tablet (768px) e desktop, sem rolagem
+  horizontal e com alvos de toque ≥44px. Cada ticket entrega o próprio componente já
+  responsivo (mobile-first); os tickets FL-13/13b/13c só validam e ajustam o conjunto.
 
 ## State
 

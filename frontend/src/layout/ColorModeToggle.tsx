@@ -12,8 +12,9 @@ export function ColorModeToggle() {
       onClick={toggleMode}
       aria-label={mode === 'day' ? 'Switch to night mode' : 'Switch to day mode'}
       sx={{
-        width: 34,
-        height: 34,
+        width: { xs: 44, sm: 34 },
+        flexShrink: 0,
+        height: { xs: 44, sm: 34 },
         border: 1,
         borderColor: 'divider',
         color: 'primary.main',

@@ -36,6 +36,7 @@ export function BrandMark() {
         sx={{
           fontFamily: (theme) => theme.typography.h5.fontFamily,
           fontSize: 17,
+          display: { xs: 'none', sm: 'inline' },
           fontWeight: 600,
         }}
       >

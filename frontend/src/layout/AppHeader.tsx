@@ -26,9 +26,12 @@ export function AppHeader() {
           }),
       }}
     >
-      <Toolbar disableGutters sx={{ minHeight: 'auto', px: '26px', py: 2, gap: '20px' }}>
+      <Toolbar
+        disableGutters
+        sx={{ minHeight: 'auto', px: { xs: 2, sm: '26px' }, py: 2, gap: { xs: 1, sm: '20px' } }}
+      >
         <BrandMark />
-        <Box sx={{ flexGrow: 1 }} />
+        <Box sx={{ flexGrow: 1, minWidth: 0 }} />
         <NavTabs />
         <ColorModeToggle />
       </Toolbar>
