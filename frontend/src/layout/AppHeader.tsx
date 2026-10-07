@@ -4,9 +4,11 @@ import Toolbar from '@mui/material/Toolbar';
 import { BrandMark } from './BrandMark';
 import { ColorModeToggle } from './ColorModeToggle';
 import { NavTabs } from './NavTabs';
-import { UserBadge } from './UserBadge';
 
-/** Top bar: ruled by a 1px divider, never shadowed. */
+/**
+ * Top bar: ruled by a 1px divider, never shadowed. No user avatar in v1 (no login);
+ * it comes back with accounts (Epic D).
+ */
 export function AppHeader() {
   return (
     <AppBar
@@ -29,7 +31,6 @@ export function AppHeader() {
         <Box sx={{ flexGrow: 1 }} />
         <NavTabs />
         <ColorModeToggle />
-        <UserBadge />
       </Toolbar>
     </AppBar>
   );

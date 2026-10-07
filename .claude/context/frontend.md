@@ -35,9 +35,9 @@ gamificação (pontos, badges, streaks, rankings).
 | `axios` | cliente HTTP; base URL em `VITE_API_URL` (`frontend/.env.example`) |
 | `lucide-react` | ícones (FL-2): `size={18}` inline / 16 em botões, `strokeWidth={1.6}` |
 
-**Ainda não instalados, previstos pelo design/roadmap:** `@react-oauth/google` (FL-3), `@mui/x-date-pickers` (opcional no FL-8), Recharts
-(opcional no FL-11; o gráfico pode ser feito à mão), Vitest + Testing Library, Playwright.
-Instale só quando o ticket precisar.
+**Ainda não instalados, previstos pelo design/roadmap:** `@mui/x-date-pickers` (opcional no FL-8), Recharts
+(opcional no FL-11; o gráfico pode ser feito à mão), Vitest + Testing Library, Playwright;
+`@react-oauth/google` só na Epic D (FL-3). Instale só quando o ticket precisar.
 
 ## Estrutura e convenções do código
 
@@ -54,13 +54,10 @@ frontend/
 │   │   ├── BrandMark.tsx      marca "FL" 28px + wordmark (link para /)
 │   │   ├── NavTabs.tsx        Tabs com Tab component={Link}; aba ativa derivada da URL (matchPath)
 │   │   ├── navItems.ts        rótulos + rotas, na ordem do header
-│   │   ├── ColorModeToggle.tsx  IconButton 34×34, Sun/Moon do lucide, aria-label "Switch to … mode"
-│   │   └── UserBadge.tsx      Avatar 29px (iniciais) + nome, via useCurrentUser()
+│   │   └── ColorModeToggle.tsx  IconButton 34×34, Sun/Moon do lucide, aria-label "Switch to … mode"
 │   ├── components/
 │   │   └── ViewPlaceholder.tsx  kicker + título + nota, para views ainda não implementadas
 │   ├── features/
-│   │   ├── auth/              placeholderUser.ts + useCurrentUser.ts (usuário fixo "Marina"/"MB"
-│   │   │                      até o FE-2 — trocar só o hook)
 │   │   ├── room/RoomPage.tsx          placeholder (conteúdo em FL-5/7/10)
 │   │   ├── history/HistoryPage.tsx    placeholder (FL-11)
 │   │   └── rooms/SharedRoomsPage.tsx  placeholder (FL-12)
@@ -150,7 +147,7 @@ Abra o PNG do ticket **antes** de implementar e compare o resultado com ele no f
 | Arquivo | O que mostra | Tickets |
 |---|---|---|
 | `Documentation/Design/screens/01-foundations.png` | Paleta e tipografia (referência, não é tela) | FL-1 |
-| `Documentation/Design/screens/02-login.png` | Login: 2 colunas, Google + convidado | FL-3, FL-14 |
+| `Documentation/Design/screens/02-login.png` | Login: 2 colunas, Google + convidado — **fora da v1** | FL-3 (Epic D) |
 | `Documentation/Design/screens/03-main-room-day.png` | Tela principal (dia): header, timer, lista do dia, ambience strip, cenas | FL-2, FL-5, FL-7, FL-9, FL-10 |
 | `Documentation/Design/screens/04-day-picker.png` | Popover do seletor de dia | FL-8 |
 | `Documentation/Design/screens/05-main-room-night.png` | Tela principal no modo noite | FL-1, FL-2, todos que pintam a sala |
@@ -164,8 +161,9 @@ Abra o PNG do ticket **antes** de implementar e compare o resultado com ele no f
 - **Header (FL-2)**: padding 16/26, divider inferior 1px, sem sombra. Marca 28px raio 10
   `primary.light` "FL" + wordmark Quicksand 600/17. `Tabs` sem indicador; ativa = pill
   `primary.light` + texto terracota; rotas: The room · History · Shared rooms. Botão dia/noite
-  34×34 raio 11 com divider, sol/lua terracota. Avatar 29px sobre `panel` + nome 12.5px.
-- **Login (FL-3)**: shell 1360×800 raio 18, colunas `1.05fr / 1fr`. Headline "Take the chair
+  34×34 raio 11 com divider, sol/lua terracota. Avatar 29px sobre `panel` + nome 12.5px —
+  **na v1 o header não mostra avatar/nome** (sem login); volta na Epic D.
+- **Login (FL-3 — fora da v1, Epic D)**: shell 1360×800 raio 18, colunas `1.05fr / 1fr`. Headline "Take the chair
   by the window." (48/600). Botão "Continue with Google" (pill tintada, ≥44px) e
   "Look around as a guest" (pill outlined). Plate de imagem raio 14 num mat de 8px —
   gradiente placeholder.
@@ -214,7 +212,8 @@ Abra o PNG do ticket **antes** de implementar e compare o resultado com ele no f
 `pomoMode: 'focus' | 'break'` · `remaining`, `running`.
 
 Fetching: tarefas por intervalo de data (com contagem por dia do mês visível para os pontos do
-picker), presets por usuário, totais diários de foco da semana.
+picker), presets por usuário, totais diários de foco da semana. Na v1, "usuário" = ID
+anônimo do navegador (header `X-Client-Id`, ver FE-3).
 
 ## Exceções técnicas do MUI
 
@@ -233,29 +232,42 @@ picker), presets por usuário, totais diários de foco da semana.
 | FE-1 ✅ | Scaffold Vite + React + TS | BE-1 | — |
 | FL-1 ✅ (PR #7) | Tema, fontes, dia/noite | FE-1 | 01 |
 | FL-2 ✅ | App shell + header + rotas | FL-1 | 03 |
-| FL-3 | Login (Google + convidado) | FL-2, BE-7 | 02 |
-| FE-2 | Contexto de auth + rotas protegidas | FL-3, BE-9 | — |
+| FE-3 | ID anônimo do navegador (UUID no localStorage + header `X-Client-Id` no axios) | FE-1 | — |
 | FL-4 | Audio engine (Web Audio, 6 loops) | FL-1 | — |
-| FL-5 | Ambience strip (mixer) | FL-4, FE-2 | 03 |
+| FL-5 | Ambience strip (mixer) | FL-4, FL-2 | 03 |
 | FL-6 | Mixer expandido (sheet) | FL-5 | 06 |
-| FL-7 | Lista de notas por dia | FL-2, FE-2, BE-13 | 03 |
+| FL-7 | Lista de notas por dia | FL-2, FE-3, BE-13 | 03 |
 | FL-8 | Day picker | FL-7 | 04 |
-| FL-9 | Cenas (presets) | FL-5, BE-15 | 03 |
+| FL-9 | Cenas (presets) | FL-5, FE-3, BE-15 | 03 |
 | FL-13 / FL-14 | Responsivo / acessibilidade (MVP) | vários | — |
 | FL-10 | Pomodoro vinculado à nota | FL-7, BE-19 | 03 |
 | FL-11 | Dashboard de histórico | BE-20 | 07 |
 | FL-12 | Salas compartilhadas | BE-25, BE-27, FL-2 | 08 |
 | FL-13b/c, FL-14b/c | Checks de responsivo/a11y por fase | — | — |
+| FL-3, FE-2 (Epic D) | Login com Google + contexto de auth — **fora da v1** | BE-7, BE-9 | 02 |
 
 Os critérios de aceite de cada `FL-x` estão na Parte 3 do ROADMAP — trate-os como checklist
 obrigatório.
+
+## Escopo da v1: sem login
+
+Decidido em outubro/2026 (ROADMAP Parte 2, "Mudança de escopo"):
+
+- Não existe login nem tela de login na v1: o app abre direto em The room (`/`).
+- Cada navegador tem um **ID anônimo** (UUID gerado no primeiro acesso, no `localStorage`),
+  enviado em toda chamada à API no header `X-Client-Id` (FE-3). É ele que separa os dados
+  de cada pessoa no backend.
+- O header **não mostra avatar nem nome** na v1: termina no botão dia/noite. O `UserBadge` e
+  o usuário fixo "Marina/MB" do FL-2 foram removidos; estão no histórico do git (PR #9) se a
+  Epic D quiser reaproveitar.
+- FL-3 (login) e FE-2 (contexto de auth) foram para a Epic D, depois do MVP.
 
 ## Decisões já tomadas (não refazer)
 
 - O `theme.ts` original do bundle de design nunca foi commitado; o atual foi reconstruído a
   partir do DESIGN.md (FL-1). Tints noturnos de sage/lilás foram derivados.
-- Modo dia/noite persiste em localStorage até existir `User` no backend (BE-8); depois
-  sincronizar com o perfil.
+- Modo dia/noite persiste em localStorage (na v1 não há perfil); sincronizar com a conta só
+  na Epic D.
 - Aba ativa do header usa a cor do override de `MuiTab` do tema (`primary.dark` no dia, por
   contraste), não o `#c98a63` do protótipo; marca "FL" e sol/lua usam `primary.main`.
 - `GET /sounds` foi removido: os 6 áudios são assets estáticos do frontend (FL-4).

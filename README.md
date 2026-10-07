@@ -33,16 +33,16 @@ Picture a big armchair in an old library on a rainy afternoon, with a fire going
 - 📈 **History.** Seven days of focus time, drawn in the same warm palette, with no neon charts.
 - 👥 **Shared rooms** *(planned)*. Join a themed room and see how many people are reading there right now. There are no points, badges or leaderboards.
 - 🌗 **Day and night modes.** Both palettes are tuned by hand. The app follows your system setting first, then remembers your choice.
-- 🔐 **Sign in with Google**, or look around as a guest.
+- 🚪 **No sign-up.** Open it and you're already in the room. Your notes and scenes are kept for your browser; optional Google sign-in comes in a later phase.
 
 <table>
   <tr>
     <td><img src="Documentation/Design/screens/05-main-room-night.png" alt="The room, night mode" /></td>
-    <td><img src="Documentation/Design/screens/02-login.png" alt="Login screen" /></td>
+    <td><img src="Documentation/Design/screens/06-mixer-sheet.png" alt="Expanded ambience mixer" /></td>
   </tr>
   <tr>
     <td align="center"><sub>Night mode</sub></td>
-    <td align="center"><sub>Login</sub></td>
+    <td align="center"><sub>Ambience mixer</sub></td>
   </tr>
   <tr>
     <td><img src="Documentation/Design/screens/07-history.png" alt="Focus history dashboard" /></td>
@@ -61,26 +61,27 @@ Picture a big armchair in an old library on a rainy afternoon, with a fire going
 | Frontend | React 19, TypeScript, Vite, Material UI with a fully custom theme, TanStack Query, React Router |
 | Backend | Python 3.12, FastAPI, SQLAlchemy 2.0 (async), Alembic, Pydantic |
 | Data | PostgreSQL 16, Redis 7 |
-| Auth | Google OAuth2 (ID token) and the app's own JWTs |
+| Identity | Anonymous browser ID in v1 (no login); Google OAuth2 planned for a later phase |
 | Async & realtime *(planned)* | Celery + RabbitMQ for the weekly summary, WebSockets + Redis Pub/Sub for live presence |
 | Tooling | Docker Compose, GitHub Actions (lint, tests, image build), Ruff, ESLint, Prettier, Husky |
 
-The architecture, the OAuth flow and the deployment plan are described in
+The architecture, the identity model and the deployment plan are described in
 [Documentation/ARCHITECTURE.md](Documentation/ARCHITECTURE.md).
 
 ## 🚦 Project status
 
-The project follows a backlog of about 48 tickets in three phases. The detailed plan is in [Documentation/ROADMAP.md](Documentation/ROADMAP.md).
+The project follows a backlog of about 50 tickets in four phases. The detailed plan is in [Documentation/ROADMAP.md](Documentation/ROADMAP.md).
 
 | Phase | Scope | Status |
 |---|---|---|
-| **0: Foundation** | Monorepo, Docker, FastAPI + Alembic, CI, DB conventions, frontend scaffold, custom theme | ✅ Done (theme in review) |
-| **1: MVP** | Google login, ambient mixer, notes for each day, day picker, scenes | 🔜 Next up |
+| **0: Foundation** | Monorepo, Docker, FastAPI + Alembic, CI, DB conventions, frontend scaffold, custom theme | ✅ Done |
+| **1: MVP** | No login: ambient mixer, notes for each day, day picker, scenes | 🔜 Next up |
 | **2: Productivity** | Pomodoro bound to tasks, 7-day history, weekly summary on Telegram | 📋 Planned |
 | **3: Shared rooms** | Themed rooms with realtime presence | 📋 Planned |
+| **4: Accounts** | Optional Google sign-in, same data on any device | 📋 Planned |
 
 **What you can run today:** the API skeleton (FastAPI, PostgreSQL and Redis in Docker) and the
-frontend shell with the custom day/night theme. The product screens come next.
+frontend shell (header, navigation and the custom day/night theme). The product screens come next.
 
 ## 🛠️ Running locally
 
@@ -161,7 +162,7 @@ Focus_Library/
 ## 📖 Documentation
 
 - [DESIGN.md](Documentation/DESIGN.md): palette, typography, the spec for each screen, interactions
-- [ARCHITECTURE.md](Documentation/ARCHITECTURE.md): auth flow, system architecture, stack and DevOps choices
+- [ARCHITECTURE.md](Documentation/ARCHITECTURE.md): identity and auth, system architecture, stack and DevOps choices
 - [ROADMAP.md](Documentation/ROADMAP.md): epics, tickets, dependencies and acceptance criteria
 - [Interactive prototype](Documentation/Design/reference/): open `Focus Library.dc.html` in a browser
 
