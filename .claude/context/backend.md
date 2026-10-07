@@ -128,7 +128,17 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
   CHECK `mins >= 0`) + id/timestamps. Índice composto `ix_tasks_client_id_date (client_id, date)`.
   Sem coluna de ordem (lista ordena por `created_at`), sem `completed_at` e sem "ativa" (é estado
   do timer no cliente) nem estimativa (derivada da duração padrão). `TaskRead` não expõe `client_id`.
-  Create/Update schemas ficam para o BE-13.
+  **API pronta (BE-13)** — todas exigem `X-Client-Id` (400 sem ele) e filtram por client; tarefa de
+  outro client ou inexistente = 404 (nunca 403); `task_id` não-UUID = 422:
+  - `GET /tasks?date=YYYY-MM-DD` (date obrigatório) → `[TaskRead]` por `created_at, id`.
+  - `GET /tasks/days?month=YYYY-MM` → `[{date, count}]` (só dias com notas; pontos do day picker, FL-8).
+  - `POST /tasks` `{title, date}` → 201 `TaskRead`. `title` é trimado, 1..200, só espaços = 422.
+  - `PATCH /tasks/{id}` parcial: `title`, `done`, `date` (mover de dia). Body vazio, valor `null`
+    ou campo desconhecido (inclui `mins`/`client_id`) = 422. `mins` NÃO é editável: só o
+    FocusSession (BE-19) deve somá-lo.
+  - `DELETE /tasks/{id}` → 204 (404 na repetição).
+  Código: `schemas/task.py` (TaskCreate/TaskUpdate/TaskDayCount), `services/tasks.py`, `api/routes/tasks.py`.
+  CORS `allow_methods` agora explícito: GET, POST, PATCH, DELETE, OPTIONS.
 - **Preset (cena)**: `name` + seis níveis 0–100 com ids fixos: pages, rain, clock, whispers,
   fire, keys. Seeds: Rainy Reading Room (rain 66 / pages 34 / clock 24), Fireside Night
   (fire 74 / rain 40 / pages 12), Quiet Stacks (keys 46 / whispers 38 / pages 20 / clock 16).
@@ -151,7 +161,7 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 | BE-5 ✅ | Convenções de schema + base de migrations | BE-2, BE-3 |
 | BE-30 ✅ | Identificação anônima: header `X-Client-Id`, model `Client`, dependency `get_client` | BE-5 |
 | BE-12 ✅ | Model `Task` (por data, client_id, mins) | BE-5, BE-30 |
-| BE-13 | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-30 |
+| BE-13 ✅ | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-30 |
 | BE-14 | Model `Preset` (nome + 6 níveis, por client_id) | BE-5, BE-30 |
 | BE-15 | CRUD `/presets` | BE-14, BE-30 |
 | BE-16 | pytest: CRUD tasks + presets | BE-13, BE-15 |

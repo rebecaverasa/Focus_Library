@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.deps import CLIENT_ID_HEADER
-from app.api.routes import clients
+from app.api.routes import clients, tasks
 from app.core.config import settings
 
 app = FastAPI()
@@ -12,11 +12,12 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", CLIENT_ID_HEADER],
 )
 
 app.include_router(clients.router)
+app.include_router(tasks.router)
 
 
 @app.get("/teste")
