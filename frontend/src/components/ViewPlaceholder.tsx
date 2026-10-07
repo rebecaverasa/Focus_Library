@@ -14,7 +14,7 @@ export function ViewPlaceholder({ kicker, title, note }: ViewPlaceholderProps) {
       <Typography variant="h6" sx={{ color: 'primary.main' }}>
         {kicker}
       </Typography>
-      <Typography variant="h2" component="h1">
+      <Typography variant="h2" component="h1" sx={{ fontSize: { xs: 28, sm: 30 } }}>
         {title}
       </Typography>
       <Typography variant="body1" sx={{ color: 'text.secondary' }}>

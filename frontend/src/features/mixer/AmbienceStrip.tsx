@@ -4,12 +4,16 @@ import Paper from '@mui/material/Paper';
 import Slider from '@mui/material/Slider';
 import { keyframes } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { Pause, Play } from 'lucide-react';
+import { Maximize2, Pause, Play } from 'lucide-react';
 import { useState } from 'react';
-import { SOUNDS, useAmbience } from '@/audio';
+import { SOUNDS } from '@/audio';
+import { MixerSheet } from './MixerSheet';
 import { SoundCard } from './SoundCard';
-import type { LastLevels } from './mixerState';
-import { arrowKeyHandler, rememberLevels, sceneCaption, toggleMute } from './mixerState';
+import { arrowKeyHandler, sceneCaption } from './mixerState';
+import { useMixer } from './useMixer';
+
+// Below this width the six cards collapse into a single bar that opens the sheet (DESIGN.md).
+const WIDE = '@media (min-width:1100px)';
 
 const breathe = keyframes`
   0%, 100% { opacity: 0.5; }
@@ -18,13 +22,10 @@ const breathe = keyframes`
 
 /** Bottom band of the room: six sound cards plus master volume and play/pause. */
 export function AmbienceStrip() {
-  const { levels, master, playing, setLevel, setMaster, toggle } = useAmbience();
-
-  // Last non-zero level per layer, for the card click. Kept here (not in the engine) because
-  // only the UI needs it; FL-6 can lift it into a shared hook when the sheet lands.
-  const [last, setLast] = useState<LastLevels>({});
-  const remembered = rememberLevels(last, levels);
-  if (remembered !== last) setLast(remembered);
+  // The strip owns the mixer (levels + mute memory) and hands it to the sheet.
+  const mixer = useMixer();
+  const { levels, master, playing, setLevel, setMaster, toggle, toggleSound } = mixer;
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
     <Paper
@@ -36,7 +37,11 @@ export function AmbienceStrip() {
         bgcolor: 'background.panel',
         borderTop: 1,
         borderColor: 'divider',
-        p: '22px 26px 24px',
+        p: {
+          xs: '14px 16px calc(14px + env(safe-area-inset-bottom))',
+          sm: '18px 26px 20px',
+          [WIDE]: '22px 26px 24px',
+        },
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
@@ -54,22 +59,51 @@ export function AmbienceStrip() {
             '@media (prefers-reduced-motion: reduce)': { animation: 'none', opacity: 0.8 },
           }}
         />
-        <Typography
-          component="h2"
-          sx={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 600, fontSize: 14 }}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'baseline',
+            columnGap: '10px',
+            minWidth: 0,
+            flex: '1 1 0',
+            [WIDE]: { flex: '0 1 auto' },
+          }}
         >
-          Ambience
-        </Typography>
-        <Typography
-          variant="caption"
-          aria-live="polite"
-          sx={{ color: 'text.secondary', fontSize: 11.5 }}
-        >
-          {sceneCaption(levels, playing)}
-        </Typography>
+          <Typography
+            component="h2"
+            sx={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 600, fontSize: 14 }}
+          >
+            Ambience
+          </Typography>
+          <Typography
+            variant="caption"
+            aria-live="polite"
+            sx={{ color: 'text.secondary', fontSize: 11.5 }}
+          >
+            {sceneCaption(levels, playing)}
+          </Typography>
+        </Box>
 
-        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Box sx={{ width: 132 }}>
+        <ButtonBase
+          onClick={() => setSheetOpen(true)}
+          aria-label="Expand mixer"
+          aria-haspopup="dialog"
+          sx={{
+            width: 44,
+            height: 44,
+            flexShrink: 0,
+            borderRadius: '50%',
+            color: 'text.secondary',
+            border: 1,
+            borderColor: 'divider',
+          }}
+        >
+          <Maximize2 size={16} strokeWidth={1.6} aria-hidden />
+        </ButtonBase>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '16px', [WIDE]: { ml: 'auto' } }}>
+          <Box sx={{ width: 132, display: 'none', [WIDE]: { display: 'block' } }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography
                 variant="caption"
@@ -107,6 +141,7 @@ export function AmbienceStrip() {
             sx={{
               width: 44,
               height: 44,
+              flexShrink: 0,
               borderRadius: '50%',
               border: 1,
               borderColor: 'primary.main',
@@ -123,7 +158,14 @@ export function AmbienceStrip() {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px' }}>
+      <Box
+        sx={{
+          display: 'none',
+          [WIDE]: { display: 'grid' },
+          gridTemplateColumns: 'repeat(6, 1fr)',
+          gap: '12px',
+        }}
+      >
         {SOUNDS.map((sound) => (
           <SoundCard
             key={sound.id}
@@ -131,14 +173,11 @@ export function AmbienceStrip() {
             level={levels[sound.id]}
             playing={playing}
             onChange={(level) => setLevel(sound.id, level)}
-            onToggle={() => {
-              const result = toggleMute(sound.id, levels[sound.id], last);
-              setLast(result.last);
-              setLevel(sound.id, result.level);
-            }}
+            onToggle={() => toggleSound(sound.id)}
           />
         ))}
       </Box>
+      <MixerSheet open={sheetOpen} onClose={() => setSheetOpen(false)} mixer={mixer} />
     </Paper>
   );
 }

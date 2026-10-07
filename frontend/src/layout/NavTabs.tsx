@@ -13,7 +13,9 @@ export function NavTabs() {
     <Tabs
       value={active?.path ?? false}
       aria-label="Main navigation"
-      sx={{ minHeight: 0, '& .MuiTabs-list': { gap: 1.5 } }}
+      variant="scrollable"
+      scrollButtons={false}
+      sx={{ minHeight: 0, minWidth: 0, '& .MuiTabs-list': { gap: { xs: 0.5, sm: 1.5 } } }}
     >
       {navItems.map((item) => (
         <Tab
@@ -25,7 +27,8 @@ export function NavTabs() {
           sx={{
             minHeight: 0,
             minWidth: 0,
-            px: 1.5,
+            px: { xs: 1.25, sm: 1.5 },
+            whiteSpace: 'nowrap',
             py: 0.75,
             lineHeight: 1.4,
             fontWeight: 500,

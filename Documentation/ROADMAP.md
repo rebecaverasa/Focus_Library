@@ -460,6 +460,9 @@ no navegador e passa a acessar os mesmos dados de qualquer dispositivo.
 - **Accessibility (FL-14) e Responsive (FL-13) foram desdobrados em 3 tickets cada**
   (um por fase: `FL-13/FL-14`, `FL-13b/FL-14b`, `FL-13c/FL-14c`) para não virarem um
   ticket gigante no fim do projeto — cada fase valida sua própria fatia antes de avançar.
+  **Regra:** isso não adia o responsivo. Todo ticket de frontend (FL-x) já entrega o próprio
+  componente funcionando em celular (≥360px), tablet (768px) e desktop; os tickets
+  FL-13/13b/13c só validam e ajustam o conjunto.
 
 ## 📝 RESUMO GERAL
 
