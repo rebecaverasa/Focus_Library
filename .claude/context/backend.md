@@ -31,7 +31,7 @@ Se este arquivo divergir do código, **vale o código** (e atualize este arquivo
 | FastAPI | 0.141 · uvicorn 0.52 |
 | ORM | SQLAlchemy 2.0 **async** + asyncpg |
 | Migrations | Alembic 1.14 (env async, `sqlalchemy.url` vem do settings) |
-| Config | pydantic-settings (`DATABASE_URL`, `REDIS_URL` do `.env`) |
+| Config | pydantic-settings (`DATABASE_URL`, `REDIS_URL`, `CORS_ORIGINS` do `.env`) |
 | Testes | pytest 8 + httpx |
 | Lint/format | ruff (line-length 100, regras `E`, `F`, `I`, target py312) |
 
@@ -45,18 +45,19 @@ Ao instalar: adicionar com versão fixa em `requirements.txt` (runtime) ou
 ```
 backend/
 ├── app/
-│   ├── main.py            FastAPI app (hoje só GET /teste)
-│   ├── core/config.py     Settings (pydantic-settings) + sqlalchemy_database_uri (troca para postgresql+asyncpg)
+│   ├── main.py            FastAPI app: CORSMiddleware (libera X-Client-Id), routers, GET /teste
+│   ├── core/config.py     Settings (pydantic-settings) + sqlalchemy_database_uri (troca para postgresql+asyncpg) + cors_origin_list
 │   ├── db/
 │   │   ├── base.py        Base(DeclarativeBase) com NAMING_CONVENTION (ix/uq/ck/fk/pk)
 │   │   ├── mixins.py      UUIDPrimaryKeyMixin (gen_random_uuid() no Postgres) + TimestampMixin (created_at/updated_at timezone-aware)
 │   │   └── session.py     engine async, AsyncSessionLocal, dependency get_db()
-│   ├── api/routes/        (vazio) — routers por recurso
-│   ├── models/            (vazio) — models SQLAlchemy
-│   ├── schemas/           (vazio) — schemas Pydantic de entrada/saída
-│   └── services/          (vazio) — regras de negócio
-├── alembic/               env.py async; versions/ ainda sem migrations
-├── tests/                 test_main.py, test_db_schema.py
+│   ├── api/deps.py        get_client / CurrentClient (X-Client-Id → upsert do Client)
+│   ├── api/routes/        routers por recurso (clients.py: GET /clients/me)
+│   ├── models/            models SQLAlchemy; __init__.py importa todos (client.py: Client)
+│   ├── schemas/           schemas Pydantic de entrada/saída (client.py: ClientRead)
+│   └── services/          regras de negócio (clients.py: upsert_client com ON CONFLICT)
+├── alembic/               env.py async (importa app.models); versions/: 0f53c8e00b90 clients
+├── tests/                 conftest.py (env fake p/ CI sem .env), test_main, test_db_schema, test_clients
 ├── commands.md            comandos do dia a dia (venv, uvicorn, ruff, pytest, alembic)
 ├── pyproject.toml         ruff + pytest (testpaths = tests)
 ├── Dockerfile             multi-stage, python:3.12-slim, uvicorn --reload
@@ -103,6 +104,10 @@ escopo" e `Documentation/ARCHITECTURE.md` §1.1):
 - O backend (BE-30) tem um model `Client` (PK = esse UUID) e uma dependency `get_client`
   que valida o header (UUID válido, senão 400), faz upsert do `Client` e o injeta nas rotas.
   Tasks, presets e focus sessions têm `client_id` (FK para `Client`).
+- **Uso (BE-30 pronto):** nas rotas, `client: CurrentClient` (de `app.api.deps`) — já valida
+  o header (400 se faltar/for inválido) e faz o upsert (`INSERT ... ON CONFLICT (id) DO UPDATE
+  SET last_seen_at = now()`). FKs novas apontam para `clients.id`. `GET /clients/me` devolve
+  `{id, created_at, last_seen_at}`. CORS libera `X-Client-Id` para as origens de `CORS_ORIGINS`.
 - Toda query filtra pelo `client_id` do header — nunca devolver dados de outro ID. O ID
   identifica, mas não autentica; não guardar dado pessoal na v1.
 
@@ -138,7 +143,7 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 | BE-3 ✅ | FastAPI + Alembic | BE-2 |
 | BE-4 ✅ | CI GitHub Actions | BE-3, FE-1 |
 | BE-5 ✅ | Convenções de schema + base de migrations | BE-2, BE-3 |
-| BE-30 | Identificação anônima: header `X-Client-Id`, model `Client`, dependency `get_client` | BE-5 |
+| BE-30 ✅ | Identificação anônima: header `X-Client-Id`, model `Client`, dependency `get_client` | BE-5 |
 | BE-12 | Model `Task` (por data, client_id, mins) | BE-5, BE-30 |
 | BE-13 | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-30 |
 | BE-14 | Model `Preset` (nome + 6 níveis, por client_id) | BE-5, BE-30 |
@@ -170,6 +175,10 @@ As descrições originais mais detalhadas estão na Parte 1 do ROADMAP (E2-x = a
 tasks/presets, E5-x = pomodoro/stats/celery, E6-x = salas).
 
 ## Decisões já tomadas (não refazer)
+
+- Testes não usam banco: `tests/conftest.py` define `DATABASE_URL`/`REDIS_URL` fake (o CI não
+  tem `.env`) e os testes de rota sobrescrevem `get_db` e trocam o service por fake em memória.
+- Pacotes de `app/` são namespace packages (sem `__init__.py`), exceto `app/models`.
 
 - `DATABASE_URL` usa `postgresql://` (funciona em qualquer cliente); o código converte para
   `postgresql+asyncpg://`.

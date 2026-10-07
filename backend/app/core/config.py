@@ -8,6 +8,13 @@ class Settings(BaseSettings):
 
     database_url: str
     redis_url: str
+    # Comma-separated origins allowed to call the API from a browser (the Vite dev server
+    # by default). A plain string because pydantic-settings would expect JSON for a list.
+    cors_origins: str = "http://localhost:5173"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
     @property
     def sqlalchemy_database_uri(self) -> str:
