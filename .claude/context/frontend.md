@@ -66,6 +66,14 @@ frontend/
 │   │   ├── clients.ts         getCurrentClient() → GET /clients/me ({id, created_at, last_seen_at})
 │   │   └── *.test.ts          testes Vitest ao lado do módulo
 │   ├── vite-env.d.ts          tipagem de import.meta.env (VITE_API_URL)
+│   ├── audio/                 motor de áudio headless + camada React (FL-4)
+│   │   ├── sounds.ts          SOUND_IDS, SoundId, Levels, SOUNDS (id, label, description,
+│   │   │                      src `/sounds/<id>.mp3`, ícone lucide), DEFAULT_LEVELS/MASTER
+│   │   ├── engine.ts          createAmbienceEngine(): Web Audio sem React (store + ações)
+│   │   ├── gesture.ts         onFirstGesture(): destrava o AudioContext no 1º gesto real
+│   │   ├── AmbienceProvider.tsx  1 engine por app (montado no main.tsx, acima do router)
+│   │   ├── ambienceContext.ts / useAmbience.ts  context + hook (useSyncExternalStore)
+│   │   └── index.ts           barrel
 │   ├── components/
 │   │   └── ViewPlaceholder.tsx  kicker + título + nota, para views ainda não implementadas
 │   ├── features/
@@ -100,6 +108,14 @@ frontend/
   history, rooms, auth), `src/api/` (axios + hooks do react-query), `src/routes/`.
   A pasta `src/components/teste/...` é um rascunho da usuária — não mexer.
 - CI (`.github/workflows/ci.yml`): `npm ci`, `npm run lint`, `npm test`, `npm run build` (Node 24).
+- **Áudio (FL-4)**: componentes usam só `useAmbience()` de `@/audio` →
+  `{ levels, master, playing, status, unlocked, setLevel(id, v), applyLevels(levels),
+  setMaster(v), play(), pause(), toggle() }`. Níveis são inteiros 0–100 (o engine faz clamp).
+  Ids, nomes, descrições e ícones dos sons vêm de `SOUNDS`/`SOUNDS_BY_ID` (não duplicar).
+  `applyLevels` não dá play — cena (FL-9) chama `applyLevels` + `play()`. "Ativo" no card =
+  `levels[id] > 0 && playing`; `status[id]` é `idle|loading|ready|error` (erro só afeta a
+  camada). Nunca criar `AudioContext` fora do engine nem fora de um gesto do usuário.
+  Arquivos: `frontend/public/sounds/{pages,rain,clock,whispers,fire,keys}.mp3`.
 - **Chamadas à API**: sempre pela instância `http` de `@/api/http` (nunca `axios` direto),
   para o `X-Client-Id` ir junto. Funções de API ficam em `src/api/<recurso>.ts`; testes
   trocam `http.defaults.adapter` em vez de usar rede.
@@ -247,7 +263,7 @@ anônimo do navegador (header `X-Client-Id`, ver FE-3).
 | FL-1 ✅ (PR #7) | Tema, fontes, dia/noite | FE-1 | 01 |
 | FL-2 ✅ | App shell + header + rotas | FL-1 | 03 |
 | FE-3 ✅ | ID anônimo do navegador (UUID no localStorage + header `X-Client-Id` no axios) | FE-1 | — |
-| FL-4 | Audio engine (Web Audio, 6 loops) | FL-1 | — |
+| FL-4 ✅ | Audio engine (Web Audio, 6 loops) | FL-1 | — |
 | FL-5 | Ambience strip (mixer) | FL-4, FL-2 | 03 |
 | FL-6 | Mixer expandido (sheet) | FL-5 | 06 |
 | FL-7 | Lista de notas por dia | FL-2, FE-3, BE-13 | 03 |
@@ -285,3 +301,11 @@ Decidido em outubro/2026 (ROADMAP Parte 2, "Mudança de escopo"):
 - Aba ativa do header usa a cor do override de `MuiTab` do tema (`primary.dark` no dia, por
   contraste), não o `#c98a63` do protótipo; marca "FL" e sol/lua usam `primary.main`.
 - `GET /sounds` foi removido: os 6 áudios são assets estáticos do frontend (FL-4).
+- Áudio (FL-4): curva de volume `gain = (nível/100)²` em cada camada e no master; toda
+  mudança é rampa linear de 120ms. Estado inicial = protótipo (Rainy Reading Room, master 72)
+  mas **pausado** ("Sound plays only when you ask"). O `AudioContext` nasce no 1º gesto
+  (pointer/tecla com `navigator.userActivation.isActive`) ou no `play()`; arquivos são
+  buscados uma única vez, quando a camada tem nível > 0 e o contexto existe. Nível 0 só
+  zera o gain (fonte e buffer continuam). Pause faz fade e suspende o contexto após a rampa.
+  Loop via `AudioBufferSourceNode.loop` com `loopStart/loopEnd` pulando o padding de silêncio
+  do MP3.
