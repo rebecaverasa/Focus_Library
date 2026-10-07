@@ -77,7 +77,11 @@ frontend/
 │   ├── components/
 │   │   └── ViewPlaceholder.tsx  kicker + título + nota, para views ainda não implementadas
 │   ├── features/
-│   │   ├── room/RoomPage.tsx          placeholder (conteúdo em FL-5/7/10)
+│   │   ├── room/RoomPage.tsx          região superior placeholder (FL-7/10) + <AmbienceStrip/> embaixo
+│   │   ├── mixer/                     ambience strip (FL-5)
+│   │   │   ├── AmbienceStrip.tsx      Paper panel: ponto, legenda aria-live, master + play/pause, grid de 6 cards
+│   │   │   ├── SoundCard.tsx          card que acende (420ms); Slider com setas ±4 / Shift ±10
+│   │   │   └── mixerState.ts          lógica pura testada: isCardActive, countOpen, sceneName/sceneCaption, nudgeLevel
 │   │   ├── history/HistoryPage.tsx    placeholder (FL-11)
 │   │   └── rooms/SharedRoomsPage.tsx  placeholder (FL-12)
 │   └── theme/
@@ -264,7 +268,7 @@ anônimo do navegador (header `X-Client-Id`, ver FE-3).
 | FL-2 ✅ | App shell + header + rotas | FL-1 | 03 |
 | FE-3 ✅ | ID anônimo do navegador (UUID no localStorage + header `X-Client-Id` no axios) | FE-1 | — |
 | FL-4 ✅ | Audio engine (Web Audio, 6 loops) | FL-1 | — |
-| FL-5 | Ambience strip (mixer) | FL-4, FL-2 | 03 |
+| FL-5 ✅ | Ambience strip (mixer) | FL-4, FL-2 | 03 |
 | FL-6 | Mixer expandido (sheet) | FL-5 | 06 |
 | FL-7 | Lista de notas por dia | FL-2, FE-3, BE-13 | 03 |
 | FL-8 | Day picker | FL-7 | 04 |
@@ -309,3 +313,13 @@ Decidido em outubro/2026 (ROADMAP Parte 2, "Mudança de escopo"):
   zera o gain (fonte e buffer continuam). Pause faz fade e suspende o contexto após a rampa.
   Loop via `AudioBufferSourceNode.loop` com `loopStart/loopEnd` pulando o padding de silêncio
   do MP3.
+- Mixer (FL-5): a strip usa só `useAmbience()`. Setas dos sliders são tratadas em
+  `onKeyDownCapture` (`arrowKeyHandler`, ±4 / Shift ±10, step MUI = 1) e não chegam ao MUI;
+  Home/End/PageUp/PageDown continuam do MUI. Nome da cena é derivado enquanto FL-9 não existe:
+  níveis == `DEFAULT_LEVELS` → "Rainy Reading Room", senão "Custom mix"; pausado → "Paused". A
+  contagem "n of six open" conta níveis > 0 mesmo pausado (como o protótipo). FL-9 deve trocar
+  `sceneName` por cena carregada/preset. A linha SCENES (chips) é do FL-9, não existe ainda.
+  Clique no card (ícone + nome, `ButtonBase` irmão do slider, rótulo "Mute/Unmute {som}") faz
+  `toggleMute`: nível > 0 → 0 guardando o nível; 0 → último não-zero (ou `DEFAULT_LEVELS`, ou 50).
+  A memória (`LastLevels`) é estado local do `AmbienceStrip`, não do engine; o FL-6 deve
+  levantá-la para um hook compartilhado quando a sheet existir.
