@@ -53,10 +53,10 @@ backend/
 │   │   └── session.py     engine async, AsyncSessionLocal, dependency get_db()
 │   ├── api/deps.py        get_client / CurrentClient (X-Client-Id → upsert do Client)
 │   ├── api/routes/        routers por recurso (clients.py: GET /clients/me)
-│   ├── models/            models SQLAlchemy; __init__.py importa todos (client.py: Client)
-│   ├── schemas/           schemas Pydantic de entrada/saída (client.py: ClientRead)
+│   ├── models/            models SQLAlchemy; __init__.py importa todos (client.py: Client, task.py: Task)
+│   ├── schemas/           schemas Pydantic de entrada/saída (client.py: ClientRead, task.py: TaskRead)
 │   └── services/          regras de negócio (clients.py: upsert_client com ON CONFLICT)
-├── alembic/               env.py async (importa app.models); versions/: 0f53c8e00b90 clients
+├── alembic/               env.py async (importa app.models); versions/: 0f53c8e00b90 clients, 276a2b91c20b tasks
 ├── tests/                 conftest.py (env fake p/ CI sem .env), test_main, test_db_schema, test_clients
 ├── commands.md            comandos do dia a dia (venv, uvicorn, ruff, pytest, alembic)
 ├── pyproject.toml         ruff + pytest (testpaths = tests)
@@ -123,6 +123,12 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 - **Task (nota do dia)**: pertence a `(client, date)`; `text`, `done`, `mins` logados (e estimativa
   "25m estimate"). Endpoints: listar por data/intervalo, criar, atualizar, remover, e
   **contagem de notas por dia para um mês** (pontos do day picker).
+  **Model pronto (BE-12):** tabela `tasks` = `client_id` (FK `clients.id`, CASCADE), `title`
+  (String 200), `date` (Date, dia da nota), `done` (bool, default false), `mins` (int, default 0,
+  CHECK `mins >= 0`) + id/timestamps. Índice composto `ix_tasks_client_id_date (client_id, date)`.
+  Sem coluna de ordem (lista ordena por `created_at`), sem `completed_at` e sem "ativa" (é estado
+  do timer no cliente) nem estimativa (derivada da duração padrão). `TaskRead` não expõe `client_id`.
+  Create/Update schemas ficam para o BE-13.
 - **Preset (cena)**: `name` + seis níveis 0–100 com ids fixos: pages, rain, clock, whispers,
   fire, keys. Seeds: Rainy Reading Room (rain 66 / pages 34 / clock 24), Fireside Night
   (fire 74 / rain 40 / pages 12), Quiet Stacks (keys 46 / whispers 38 / pages 20 / clock 16).
@@ -144,7 +150,7 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 | BE-4 ✅ | CI GitHub Actions | BE-3, FE-1 |
 | BE-5 ✅ | Convenções de schema + base de migrations | BE-2, BE-3 |
 | BE-30 ✅ | Identificação anônima: header `X-Client-Id`, model `Client`, dependency `get_client` | BE-5 |
-| BE-12 | Model `Task` (por data, client_id, mins) | BE-5, BE-30 |
+| BE-12 ✅ | Model `Task` (por data, client_id, mins) | BE-5, BE-30 |
 | BE-13 | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-30 |
 | BE-14 | Model `Preset` (nome + 6 níveis, por client_id) | BE-5, BE-30 |
 | BE-15 | CRUD `/presets` | BE-14, BE-30 |
