@@ -80,8 +80,9 @@ frontend/
   `eslint --fix` + `prettier` no commit.
 - **Alias**: `@/*` → `src/*` (`paths` no `tsconfig.json` raiz **e** no `tsconfig.app.json` — o
   `tsc -b` só enxerga o segundo; + `vite-tsconfig-paths`).
-- **Cor em `Typography`**: use `sx={{ color: 'text.secondary' }}`; a prop `color="text.secondary"`
-  não pintou no MUI 9 (o texto saiu em `text.primary`).
+- **Cor em `Typography`**: no MUI 9 a prop `color` aceita as chaves `textPrimary`,
+  `textSecondary`, `textDisabled` (e `primary`, `success`...) — **não** `text.secondary` (esse
+  valor é ignorado). Use `color="textSecondary"` ou `sx={{ color: 'text.secondary' }}`.
 - **Imports do MUI** por caminho: `import Button from '@mui/material/Button'`.
 - **Estilo**: sempre via tema (`sx`, `styled()`, `theme.palette.*`). **Nunca** hex solto no
   componente quando existe token. Cores extras do tema: `background.panel` e
