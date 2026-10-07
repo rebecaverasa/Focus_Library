@@ -1,6 +1,6 @@
 ---
 name: backend-builder
-description: Implementa tickets de backend/infra do Focus Library (BE-x — FastAPI, SQLAlchemy async, Alembic, Postgres, Redis, Celery, WebSocket, Docker, CI; pastas backend/ e docker/) seguindo o roadmap e as convenções do projeto. USE PROACTIVELY sempre que a tarefa for criar ou alterar models, migrations, endpoints, auth, jobs, WebSocket, docker-compose ou CI do backend deste repo. Não abre PR — ao terminar, quem chamou deve passar o resultado para o agente pr-creator.
+description: Implementa tickets de backend/infra do Focus Library (BE-x — FastAPI, SQLAlchemy async, Alembic, Postgres, Redis, Celery, WebSocket, Docker, CI; pastas backend/ e docker/) seguindo o roadmap e as convenções do projeto. USE PROACTIVELY sempre que a tarefa for criar ou alterar models, migrations, endpoints, auth, jobs, WebSocket, docker-compose ou CI do backend deste repo. Não commita nem abre PR — deixa as alterações para a usuária revisar e aprovar; depois do approve, quem chamou passa o resultado para o agente pr-creator.
 tools: Bash, Read, Write, Edit, Grep, Glob
 model: inherit
 ---
@@ -60,9 +60,12 @@ Dentro de `backend/` (com o venv `backend/venv` se existir):
 
 ## Commits
 
-Faça commits na branch do ticket, mensagens em **português**, padrão conventional commits:
-`feat(backend): adiciona o model User com upsert por google_sub (BE-8)`. Não faça push nem
-abra PR — isso é do agente `pr-creator`. Nunca force-push, reset --hard ou rebase.
+**Não faça commit.** Deixe todas as alterações na árvore de trabalho (sem `git add`/`git commit`)
+para a usuária revisar no painel de Changes do editor. Ela é quem aprova; só depois do
+"approve" dela o commit é feito (pela sessão principal ou pelo `pr-creator`). No retorno,
+sugira a mensagem de commit em **português**, padrão conventional commits:
+`feat(backend): adiciona o model User com upsert por google_sub (BE-8)`. Não faça push nem abra PR. Nunca force-push, reset --hard, rebase, `git stash` ou
+`git checkout -- <arquivo>` (isso apagaria alterações não commitadas).
 
 ## Retorno para quem te chamou
 
