@@ -33,9 +33,9 @@ gamificação (pontos, badges, streaks, rankings).
 | `react-router-dom` 7 | rotas (shell no FL-2) |
 | `@tanstack/react-query` 5 | fetching/cache dos dados do backend |
 | `axios` | cliente HTTP; base URL em `VITE_API_URL` (`frontend/.env.example`) |
+| `lucide-react` | ícones (FL-2): `size={18}` inline / 16 em botões, `strokeWidth={1.6}` |
 
-**Ainda não instalados, previstos pelo design/roadmap:** `lucide-react` (ícones — FL-2 em
-diante), `@react-oauth/google` (FL-3), `@mui/x-date-pickers` (opcional no FL-8), Recharts
+**Ainda não instalados, previstos pelo design/roadmap:** `@react-oauth/google` (FL-3), `@mui/x-date-pickers` (opcional no FL-8), Recharts
 (opcional no FL-11; o gráfico pode ser feito à mão), Vitest + Testing Library, Playwright.
 Instale só quando o ticket precisar.
 
@@ -46,7 +46,24 @@ frontend/
 ├── index.html                 título "Focus Library"
 ├── src/
 │   ├── main.tsx               carrega ./theme/fonts e envolve <App/> com <AppThemeProvider>
-│   ├── App.tsx                hoje: prévia temporária do tema (o FL-2 substitui pelo shell)
+│   ├── App.tsx                só renderiza <AppRouter/>
+│   ├── routes/AppRouter.tsx   createBrowserRouter: AppShell + / · /history · /rooms; '*' → '/'
+│   ├── layout/                shell e header (FL-2)
+│   │   ├── AppShell.tsx       AppHeader + <main><Outlet/></main>
+│   │   ├── AppHeader.tsx      AppBar elevation 0, sticky, régua 1px, padding 16/26, gap 20
+│   │   ├── BrandMark.tsx      marca "FL" 28px + wordmark (link para /)
+│   │   ├── NavTabs.tsx        Tabs com Tab component={Link}; aba ativa derivada da URL (matchPath)
+│   │   ├── navItems.ts        rótulos + rotas, na ordem do header
+│   │   ├── ColorModeToggle.tsx  IconButton 34×34, Sun/Moon do lucide, aria-label "Switch to … mode"
+│   │   └── UserBadge.tsx      Avatar 29px (iniciais) + nome, via useCurrentUser()
+│   ├── components/
+│   │   └── ViewPlaceholder.tsx  kicker + título + nota, para views ainda não implementadas
+│   ├── features/
+│   │   ├── auth/              placeholderUser.ts + useCurrentUser.ts (usuário fixo "Marina"/"MB"
+│   │   │                      até o FE-2 — trocar só o hook)
+│   │   ├── room/RoomPage.tsx          placeholder (conteúdo em FL-5/7/10)
+│   │   ├── history/HistoryPage.tsx    placeholder (FL-11)
+│   │   └── rooms/SharedRoomsPage.tsx  placeholder (FL-12)
 │   └── theme/
 │       ├── theme.ts           buildTheme('day'|'night') — tokens + overrides de componentes
 │       ├── AppThemeProvider.tsx  ThemeProvider + CssBaseline; modo inicial = prefers-color-scheme,
@@ -61,7 +78,11 @@ frontend/
   `typescript-eslint`, `react-hooks`, `react-refresh` (um `.tsx` deve exportar só componentes
   — por isso context/hook ficam em `.ts` separados). Husky + lint-staged rodam
   `eslint --fix` + `prettier` no commit.
-- **Alias**: `@/*` → `src/*` (tsconfig + `vite-tsconfig-paths`).
+- **Alias**: `@/*` → `src/*` (`paths` no `tsconfig.json` raiz **e** no `tsconfig.app.json` — o
+  `tsc -b` só enxerga o segundo; + `vite-tsconfig-paths`).
+- **Cor em `Typography`**: no MUI 9 a prop `color` aceita as chaves `textPrimary`,
+  `textSecondary`, `textDisabled` (e `primary`, `success`...) — **não** `text.secondary` (esse
+  valor é ignorado). Use `color="textSecondary"` ou `sx={{ color: 'text.secondary' }}`.
 - **Imports do MUI** por caminho: `import Button from '@mui/material/Button'`.
 - **Estilo**: sempre via tema (`sx`, `styled()`, `theme.palette.*`). **Nunca** hex solto no
   componente quando existe token. Cores extras do tema: `background.panel` e
@@ -211,7 +232,7 @@ picker), presets por usuário, totais diários de foco da semana.
 |---|---|---|---|
 | FE-1 ✅ | Scaffold Vite + React + TS | BE-1 | — |
 | FL-1 ✅ (PR #7) | Tema, fontes, dia/noite | FE-1 | 01 |
-| FL-2 | App shell + header + rotas | FL-1 | 03 |
+| FL-2 ✅ | App shell + header + rotas | FL-1 | 03 |
 | FL-3 | Login (Google + convidado) | FL-2, BE-7 | 02 |
 | FE-2 | Contexto de auth + rotas protegidas | FL-3, BE-9 | — |
 | FL-4 | Audio engine (Web Audio, 6 loops) | FL-1 | — |
@@ -235,4 +256,6 @@ obrigatório.
   partir do DESIGN.md (FL-1). Tints noturnos de sage/lilás foram derivados.
 - Modo dia/noite persiste em localStorage até existir `User` no backend (BE-8); depois
   sincronizar com o perfil.
+- Aba ativa do header usa a cor do override de `MuiTab` do tema (`primary.dark` no dia, por
+  contraste), não o `#c98a63` do protótipo; marca "FL" e sol/lua usam `primary.main`.
 - `GET /sounds` foi removido: os 6 áudios são assets estáticos do frontend (FL-4).
