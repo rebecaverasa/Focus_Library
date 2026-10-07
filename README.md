@@ -1,145 +1,172 @@
-# Focus Library
+<div align="center">
 
-> Provisional name.
+# 📚 Focus Library
 
-A virtual study library/room, with a classic/cozy library theme: ambient sound mixer
-(pages turning, rain on the window, wall clock, background whispers, fireplace, laptop
-keyboard) to accompany studying/working, daily tasks, focus timer (Pomodoro), session
-history, and, in the future, shared study rooms with real-time presence.
+**A cozy virtual reading room for deep work.**
 
-**Project goal**: deepen fullstack knowledge (Python + TypeScript/React/Material UI)
-through a complete personal project, using only free tools/services.
+Ambient library sounds, a Pomodoro timer bound to your tasks, and a quiet place to come back to, by day or by firelight.
 
-This project intends to use per-user data persistence, tasks, a productivity timer, and
-real-time presence — which justifies a complete fullstack stack (backend, database,
-messaging, real-time), as well as login with the user's Google account.
+![Status](https://img.shields.io/badge/status-in%20development-c98a63)
+![React](https://img.shields.io/badge/React-19-3d332b?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3d332b?logo=typescript)
+![MUI](https://img.shields.io/badge/MUI-custom%20theme-3d332b?logo=mui)
+![FastAPI](https://img.shields.io/badge/FastAPI-Python%203.12-3d332b?logo=fastapi)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-3d332b?logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-compose-3d332b?logo=docker)
 
-> Related documentation:
-> - **[Documentation/DESIGN.md](Documentation/DESIGN.md)** — original design prompt, palette,
->   typography, screen-by-screen specification, interactions, state, and UI technical exceptions.
-> - **[Documentation/ROADMAP.md](Documentation/ROADMAP.md)** — implementation plan, consolidated
->   backlog (Epics/tickets), and detailed design tickets, ready for Jira.
-> - Design assets (screenshots, interactive `.dc.html` prototype) live in
->   `Documentation/Design/`.
+</div>
+
+> [!NOTE]
+> 🚧 **Work in progress.** Focus Library is being built in the open, one ticket at a time.
+> The screenshots below are the **final design**; the running app is catching up to them.
+> See [Project status](#-project-status) for what already works.
+
+![The room, day mode](Documentation/Design/screens/03-main-room-day.png)
+
+## ✨ What it is
+
+Picture a big armchair in an old library on a rainy afternoon, with a fire going in the next room. Focus Library tries to put that on your screen and help you get through your work.
+
+- 🎧 **Ambient mixer.** Six looping layers: pages turning, rain on the window, a wall clock, distant whispers, a crackling fireplace and a laptop keyboard. Each one has its own volume, and you can save the mixes you like as **scenes**.
+- 📝 **Notes for each day.** Your tasks belong to a date. A day picker shows which days have notes.
+- ⏱️ **Pomodoro tied to a task.** Pick a task and press *Focus*. When you finish it, the session ends and the minutes are logged.
+- 📈 **History.** Seven days of focus time, drawn in the same warm palette, with no neon charts.
+- 👥 **Shared rooms** *(planned)*. Join a themed room and see how many people are reading there right now. There are no points, badges or leaderboards.
+- 🌗 **Day and night modes.** Both palettes are tuned by hand. The app follows your system setting first, then remembers your choice.
+- 🔐 **Sign in with Google**, or look around as a guest.
+
+<table>
+  <tr>
+    <td><img src="Documentation/Design/screens/05-main-room-night.png" alt="The room, night mode" /></td>
+    <td><img src="Documentation/Design/screens/02-login.png" alt="Login screen" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Night mode</sub></td>
+    <td align="center"><sub>Login</sub></td>
+  </tr>
+  <tr>
+    <td><img src="Documentation/Design/screens/07-history.png" alt="Focus history dashboard" /></td>
+    <td><img src="Documentation/Design/screens/08-shared-rooms.png" alt="Shared rooms" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Focus history</sub></td>
+    <td align="center"><sub>Shared rooms</sub></td>
+  </tr>
+</table>
+
+## 🧱 Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, Material UI with a fully custom theme, TanStack Query, React Router |
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2.0 (async), Alembic, Pydantic |
+| Data | PostgreSQL 16, Redis 7 |
+| Auth | Google OAuth2 (ID token) and the app's own JWTs |
+| Async & realtime *(planned)* | Celery + RabbitMQ for the weekly summary, WebSockets + Redis Pub/Sub for live presence |
+| Tooling | Docker Compose, GitHub Actions (lint, tests, image build), Ruff, ESLint, Prettier, Husky |
+
+The architecture, the OAuth flow and the deployment plan are described in
+[Documentation/ARCHITECTURE.md](Documentation/ARCHITECTURE.md).
+
+## 🚦 Project status
+
+The project follows a backlog of about 48 tickets in three phases. The detailed plan is in [Documentation/ROADMAP.md](Documentation/ROADMAP.md).
+
+| Phase | Scope | Status |
+|---|---|---|
+| **0: Foundation** | Monorepo, Docker, FastAPI + Alembic, CI, DB conventions, frontend scaffold, custom theme | ✅ Done (theme in review) |
+| **1: MVP** | Google login, ambient mixer, notes for each day, day picker, scenes | 🔜 Next up |
+| **2: Productivity** | Pomodoro bound to tasks, 7-day history, weekly summary on Telegram | 📋 Planned |
+| **3: Shared rooms** | Themed rooms with realtime presence | 📋 Planned |
+
+**What you can run today:** the API skeleton (FastAPI, PostgreSQL and Redis in Docker) and the
+frontend shell with the custom day/night theme. The product screens come next.
+
+## 🛠️ Running locally
+
+> [!IMPORTANT]
+> The app is still under construction, so running it locally only shows the current
+> foundation, not the full experience in the screenshots. These steps will change as
+> features land.
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine with the Compose plugin)
+- [Node.js](https://nodejs.org/) 24 and npm
+- *Optional:* Python 3.12, only if you want to run the API outside Docker
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/rebecaverasa/Focus_Library.git
+cd Focus_Library
+```
+
+### 2. Start the backend (API + PostgreSQL + Redis)
+
+```bash
+# Create the environment file for Docker Compose (the defaults work for local dev)
+cp docker/.env.example docker/.env
+
+# Build and start the containers
+docker compose -f docker/docker-compose.yml up -d --build
+
+# Apply the database migrations
+docker compose -f docker/docker-compose.yml exec api alembic upgrade head
+```
+
+The API runs at **http://localhost:8000**, with interactive docs at **http://localhost:8000/docs**.
+To stop everything, run `docker compose -f docker/docker-compose.yml down`.
+
+### 3. Start the frontend
+
+```bash
+cd frontend
+cp .env.example .env   # points the app to http://localhost:8000
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173**.
+
+### Running the checks
+
+These are the same checks the CI runs on every pull request.
+
+```bash
+# Backend: inside backend/, with requirements-dev.txt installed
+ruff check .
+ruff format --check .
+python -m pytest
+
+# Frontend: inside frontend/
+npm run lint
+npm run build
+```
+
+More backend commands (running the API outside Docker, creating migrations, a Windows note about
+asyncpg) are in [backend/commands.md](backend/commands.md).
+
+## 📂 Repository layout
+
+```
+Focus_Library/
+├── backend/          FastAPI app, SQLAlchemy models, Alembic migrations, tests
+├── frontend/         React + TypeScript + MUI single-page app
+├── docker/           docker-compose for the API, PostgreSQL and Redis
+├── Documentation/    design spec, architecture, roadmap, screenshots and the interactive prototype
+└── .github/          CI workflow and pull request template
+```
+
+## 📖 Documentation
+
+- [DESIGN.md](Documentation/DESIGN.md): palette, typography, the spec for each screen, interactions
+- [ARCHITECTURE.md](Documentation/ARCHITECTURE.md): auth flow, system architecture, stack and DevOps choices
+- [ROADMAP.md](Documentation/ROADMAP.md): epics, tickets, dependencies and acceptance criteria
+- [Interactive prototype](Documentation/Design/reference/): open `Focus Library.dc.html` in a browser
 
 ---
 
-## 1. Concept
-
-A virtual study library/room, with a library theme: ambient sound mixer (pages turning,
-rain on the window, wall clock, background whispers, fireplace, laptop keyboard) to
-accompany studying/working. This project intends to use per-user data persistence, tasks,
-a productivity timer, and real-time presence — which justifies a complete fullstack stack
-(backend, database, messaging, real-time), as well as login with the user's Google account.
-
-## 2. Features
-
-**Phase 1 — MVP**:
-- Library ambient sound mixer (independent volume per sound: pages, rain, clock,
-  whispers, fireplace, etc.)
-- Authentication: Google login (user data saved in the cloud, accessible from any
-  device)
-- Per-user persisted to-do list
-- Presets: save your favorite volume combination
-
-**Phase 2**:
-- Pomodoro / focus timer linked to tasks
-- Focus session history (dashboard with chart)
-- Automatic weekly summary (email): completed tasks + focus minutes
-
-**Phase 3** (optional, but valuable for portfolio):
-- Shared study "rooms": users join a themed room (e.g. "Silent Reading Room",
-  "Rain in the West Wing", "Night Study Room") and see in real time how many
-  other people are studying there
-
-## 3. Authentication — OAuth2 flow
-
-Standard OAuth2 flow for SPA ("Sign in with Google"):
-
-1. Frontend uses `@react-oauth/google` (Google Identity Services) to render the login button.
-2. Upon authentication, Google returns an ID token (signed JWT, with email, name, photo, `sub` =
-   unique user ID on Google).
-3. Frontend sends that token to `POST /auth/google` on the backend.
-4. Backend validates the token with the `google-auth` library (signature + audience = project's Client ID).
-5. Backend upserts the user in Postgres (key: `google_sub`) and issues its own JWT
-   (access + refresh) for subsequent calls.
-6. Data (tasks, presets, sessions) is linked to `google_sub` in Postgres — that's why it
-   works across any device.
-
-**Setup**: Google Cloud Console → create project → configure OAuth consent screen →
-create OAuth Client ID (Web application) → register authorized origins (`localhost:5173` in
-dev, Vercel domain in production). No cost.
-
-**Scope decision**: login only via Google, without traditional email/password — avoids building
-password reset, email verification, hashing, etc., without losing the portfolio value of the
-OAuth2 flow.
-
-## 4. Architecture (overview)
-
-```
-[Frontend React/TS - Vercel]
-        |
-        | REST + WebSocket
-        v
-[FastAPI - k3s on Oracle Cloud]
-    |         |
-    |         +--> [Redis] (cache + Pub/Sub for WebSocket across replicas)
-    |         +--> [RabbitMQ] (queue broker)
-    |
-    +--> [PostgreSQL] (users, tasks, sessions, presets)
-
-[Celery Worker] <-- consumes queue --> [RabbitMQ]
-[Celery Beat] --> schedules weekly job (productivity summary)
-```
-
-## 5. Tech Stack
-
-| Layer | Technology | Notes |
-|---|---|---|
-| Backend API | Python + FastAPI | REST + automatic docs (Swagger) |
-| Authentication | Google OAuth2 + own JWT | `google-auth` (backend), `@react-oauth/google` (frontend) |
-| Real-time | WebSocket (FastAPI) + Redis Pub/Sub | synchronizes presence across backend replicas |
-| Queue / async tasks | Celery + RabbitMQ | session processing, weekly summary |
-| Scheduling | Celery Beat | triggers periodic jobs |
-| Relational database | PostgreSQL | persistent data |
-| Cache | Redis | query cache + Pub/Sub broker |
-| Frontend | React + TypeScript (Vite) | audio mixer, to-do list, dashboard |
-| Charts | Recharts / Chart.js | focus history |
-| Notifications | Telegram Bot API | weekly summary, simpler than SMTP |
-| Backend tests | pytest + httpx | |
-| Frontend tests | Vitest + Testing Library, Playwright (E2E) | |
-
-## 6. DevOps
-
-| Piece | Choice | Free? |
-|---|---|---|
-| Containerization | Docker + docker-compose (local dev) | yes |
-| Orchestration | Kubernetes (k3s) running on Oracle Cloud Always Free ARM VMs | yes, permanently (alternative for learning without infra: kind/minikube local) |
-| Image registry | GitHub Container Registry (ghcr.io) | yes |
-| CI | GitHub Actions (lint, tests, image build) | yes |
-| CD | GitHub Actions or ArgoCD (GitOps) applying to the cluster | yes |
-| Frontend deploy | Vercel | yes, and it's the most widely used in the market for React/TS apps |
-| Backend deploy (simple alternative before k8s) | Render free tier | yes |
-| Observability — metrics | Prometheus + Grafana self-hosted on the cluster | yes |
-| Observability — logs | Grafana Loki | yes |
-| Observability — errors | Sentry (free tier) | yes |
-| Observability — uptime | UptimeRobot | yes |
-
-**Note on free Kubernetes**: there's no free-forever 24/7 managed K8s cluster on the
-major clouds (GCP/AWS/Azure only give credits for a limited time). The practical path used
-is to run k3s on Oracle Cloud Always Free VMs (permanent, no time limit). Alternative
-for learning without worrying about infra: kind/minikube local.
-
-## 7. Roadmap (high-level view)
-
-1. **Local MVP**: FastAPI + Postgres + Google login + to-do list + frontend with sound mixer —
-   all via docker-compose
-2. **Messaging**: Celery + RabbitMQ for the weekly summary (simple async job)
-3. **Real-time**: WebSocket + Redis Pub/Sub for shared rooms
-4. **CI**: GitHub Actions running tests on every PR
-5. **Initial deploy**: Vercel (frontend) + Render/Oracle (backend) — "live" version
-6. **Kubernetes + CD + Observability**: migrate the backend to k3s, add
-   Prometheus/Grafana/Sentry
-
-> Full detail in epics/tickets, estimates, dependencies, and week-by-week timeline
-> is in **[Documentation/ROADMAP.md](Documentation/ROADMAP.md)**.
+<div align="center">
+<sub>Built by <a href="https://github.com/rebecaverasa">Rebeca Veras</a> as a hands-on fullstack project · Name is provisional</sub>
+</div>
