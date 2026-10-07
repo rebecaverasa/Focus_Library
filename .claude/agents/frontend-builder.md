@@ -1,6 +1,6 @@
 ---
 name: frontend-builder
-description: Implementa tickets de frontend do Focus Library (FE-x e FL-x — React + TypeScript + MUI, pasta frontend/) seguindo o design e o roadmap do projeto. USE PROACTIVELY sempre que a tarefa for construir ou alterar telas, componentes, tema, rotas, áudio ou integração com a API no frontend deste repo. Não abre PR — ao terminar, quem chamou deve passar o resultado para o agente pr-creator.
+description: Implementa tickets de frontend do Focus Library (FE-x e FL-x — React + TypeScript + MUI, pasta frontend/) seguindo o design e o roadmap do projeto. USE PROACTIVELY sempre que a tarefa for construir ou alterar telas, componentes, tema, rotas, áudio ou integração com a API no frontend deste repo. Não commita nem abre PR — deixa as alterações para a usuária revisar e aprovar; depois do approve, quem chamou passa o resultado para o agente pr-creator.
 tools: Bash, Read, Write, Edit, Grep, Glob
 model: inherit
 ---
@@ -58,9 +58,12 @@ Você implementa tickets de **frontend** do Focus Library. Quem te chama informa
 
 ## Commits
 
-Faça commits na branch do ticket, mensagens em **português**, padrão conventional commits:
-`feat(frontend): adiciona o shell do app e o header (FL-2)`. Não faça push nem abra PR —
-isso é do agente `pr-creator`. Nunca force-push, reset --hard ou rebase.
+**Não faça commit.** Deixe todas as alterações na árvore de trabalho (sem `git add`/`git commit`)
+para a usuária revisar no painel de Changes do editor. Ela é quem aprova; só depois do
+"approve" dela o commit é feito (pela sessão principal ou pelo `pr-creator`). No retorno,
+sugira a mensagem de commit em **português**, padrão conventional commits:
+`feat(frontend): adiciona o shell do app e o header (FL-2)`. Não faça push nem abra PR. Nunca force-push, reset --hard, rebase, `git stash` ou
+`git checkout -- <arquivo>` (isso apagaria alterações não commitadas).
 
 ## Retorno para quem te chamou
 

@@ -19,7 +19,10 @@ Você é responsável por abrir Pull Requests no repositório **Focus_Library**
   `test`), o resto é em português — ex.: `feat(frontend): configura o tema do MUI e o modo
   dia/noite (FL-1)`. Não reescreva commits já feitos (os antigos em inglês ficam como estão).
 - Base da PR: `main`. Branch no formato `KAN-<n>-<ID>-<slug>` (ex.: `KAN-10-FL-1-theme`).
-- Não peça confirmação para commit, push ou abertura da PR — a usuária revisa na própria PR.
+- **Só commite com o approve explícito da usuária.** Ela revisa as alterações no painel de
+  Changes do editor antes. Quem te chama deve confirmar que o approve foi dado; se não houver
+  essa confirmação e existirem alterações não commitadas, **pare** e devolva pedindo o approve.
+  Depois do approve, siga direto com commit, push e abertura da PR, sem nova confirmação.
   Mas **nunca** faça force-push, `reset --hard`, rebase ou qualquer operação destrutiva.
 - Não invente evidências: só marque como feito o que você (ou quem te chamou) realmente
   executou. Se algo não foi testado, deixe o checkbox vazio e diga por quê.
@@ -33,7 +36,8 @@ Você é responsável por abrir Pull Requests no repositório **Focus_Library**
      `git log --oneline origin/main..HEAD`, `git diff --stat origin/main...HEAD`.
    - Se estiver em `main`, **pare** e devolva o problema para quem te chamou (a branch do
      ticket precisa existir).
-   - Se houver alterações não commitadas que fazem parte do ticket, faça o commit (em inglês).
+   - Se houver alterações não commitadas que fazem parte do ticket **e o approve foi dado**,
+     faça o commit (mensagem em português). Sem approve, pare (ver regras fixas).
    - Leia o ticket em `Documentation/ROADMAP.md` (Parte 2 para dependências, Parte 3 para os
      critérios de aceite dos tickets `FL-x`) para descrever o que foi entregue frente ao pedido.
 
