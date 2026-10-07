@@ -309,7 +309,16 @@ Este planejamento está pronto para ser traduzido em **Epics + Stories + Tasks**
 **Fonte**: mescla do plano de implementação original (E1-E6, Parte 1 acima) com os tickets de design
 (`FL-1` a `FL-14`, ver Parte 3 abaixo) recebidos do Claude Design.
 
-**Estrutura**: 3 Epics por fase. Story Points em escala Fibonacci (1, 2, 3, 5, 8).
+**Estrutura**: 4 Epics por fase. Story Points em escala Fibonacci (1, 2, 3, 5, 8).
+
+> **Mudança de escopo (outubro/2026) — v1 sem login.** A primeira versão não tem login nem
+> tela de login: o app abre direto na sala (The room). Cada navegador ganha um **ID anônimo**
+> (UUID gerado no primeiro acesso e guardado no `localStorage`), enviado em toda chamada à API
+> no header `X-Client-Id`; o backend guarda tarefas, cenas e sessões no Postgres por esse ID.
+> Os tickets de login com Google (`BE-6` a `BE-11`, `FL-3`, `FE-2`) saíram da Epic A e foram
+> para a nova **Epic D — Contas e login com Google**, depois do MVP. Entraram `BE-30` e
+> `FE-3` (ID anônimo) e `BE-31` (vincular os dados do ID anônimo à conta, na Epic D).
+> Consequência: na v1 os dados ficam presos ao navegador onde foram criados.
 
 **Convenção de IDs neste documento** (referência interna, não precisa virar o ID real do
 Jira — o Jira vai gerar KAN-1, KAN-2, etc. na ordem de criação):
@@ -326,6 +335,7 @@ Jira — o Jira vai gerar KAN-1, KAN-2, etc. na ordem de criação):
 | **Epic A** | Fase 0-1 — Fundação & MVP | Ambiente, auth, mixer, tarefas e presets funcionando ponta a ponta | 🔴 P0 |
 | **Epic B** | Fase 2 — Produtividade & Analytics | Pomodoro vinculado a tarefas, histórico, resumo semanal | 🟠 P1 |
 | **Epic C** | Fase 3 — Salas Compartilhadas | Presença em tempo real em salas temáticas | 🟡 P2 |
+| **Epic D** | Fase 4 — Contas e login com Google | Login com Google, dados acessíveis de qualquer dispositivo | 🟡 P2 |
 
 ## 📊 EPIC A — Fase 0-1: Fundação & MVP
 
@@ -339,32 +349,27 @@ Jira — o Jira vai gerar KAN-1, KAN-2, etc. na ordem de criação):
 | BE-5 | Schema inicial do banco + migrations (Alembic) | Setup | 3 | `setup`,`backend` | BE-2, BE-3 | — |
 | FL-1 | Theme and typography setup — wire `theme.ts`, fontes, dark/light mode | Frontend | 3 | `frontend` | FE-1 | `01-foundations.png` |
 | FL-2 | App shell and header (AppBar, Tabs, avatar, toggle dia/noite) | Frontend | 3 | `frontend` | FL-1 | `03-main-room-day.png` |
-| BE-6 | Google Cloud Console: configurar OAuth2 (Client ID, consent screen) | Setup | 2 | `setup` | — | — |
-| BE-7 | Backend: rota `POST /auth/google` (valida JWT do Google) | Backend | 5 | `backend` | BE-3, BE-6 | — |
-| BE-8 | Backend: modelo `User` + upsert por `google_sub` | Backend | 3 | `backend` | BE-5, BE-7 | — |
-| BE-9 | Backend: emissão de JWT próprio (access + refresh) | Backend | 5 | `backend` | BE-8 | — |
-| BE-10 | Backend: middleware de autenticação (`@require_auth`) | Backend | 3 | `backend` | BE-9 | — |
-| FL-3 | Login screen — Google OAuth + entrada como convidado | Frontend | 3 | `frontend` | FL-2, BE-7 | `02-login.png` |
-| FE-2 | Auth context/hook global + proteção de rotas | Frontend | 3 | `frontend` | FL-3, BE-9 | — |
-| BE-11 | Testes pytest: `/auth/google` + validação de JWT | Testes | 3 | `test`,`backend` | BE-10 | — |
+| BE-30 | Backend: identificação anônima por navegador (header `X-Client-Id`, modelo `Client`, dependency `get_client`) | Backend | 3 | `backend` | BE-5 | — |
+| FE-3 | Frontend: ID anônimo do navegador (UUID no `localStorage` + header `X-Client-Id` no axios) | Frontend | 2 | `frontend` | FE-1 | — |
 | FL-4 | Audio engine — seis camadas em loop (Web Audio API) | Frontend | 8 | `frontend` | FL-1 | — |
-| FL-5 | Ambience strip (mixer) — 6 cards + master transport | Frontend | 5 | `frontend` | FL-4, FE-2 | `03-main-room-day.png` |
+| FL-5 | Ambience strip (mixer) — 6 cards + master transport | Frontend | 5 | `frontend` | FL-4, FL-2 | `03-main-room-day.png` |
 | FL-6 | Ambience expanded sheet (mixer em tela cheia) | Frontend | 3 | `frontend` | FL-5 | `06-mixer-sheet.png` |
-| BE-12 | Backend: modelo `Task` (por data, `user_id`, `mins` logados) | Backend | 3 | `backend` | BE-5, BE-8 | — |
-| BE-13 | Backend: CRUD endpoints `/tasks` (GET por data, POST, PATCH, DELETE) | Backend | 5 | `backend` | BE-12, BE-10 | — |
-| FL-7 | Per-day notes list (lista de tarefas do dia selecionado) | Frontend | 5 | `frontend` | FL-2, FE-2, BE-13 | `03-main-room-day.png` |
+| BE-12 | Backend: modelo `Task` (por data, `client_id`, `mins` logados) | Backend | 3 | `backend` | BE-5, BE-30 | — |
+| BE-13 | Backend: CRUD endpoints `/tasks` (GET por data, POST, PATCH, DELETE) | Backend | 5 | `backend` | BE-12, BE-30 | — |
+| FL-7 | Per-day notes list (lista de tarefas do dia selecionado) | Frontend | 5 | `frontend` | FL-2, FE-3, BE-13 | `03-main-room-day.png` |
 | FL-8 | Day picker no header da lista (popover + calendário) | Frontend | 5 | `frontend` | FL-7 | `04-day-picker.png` |
-| BE-14 | Backend: modelo `Preset` (nome + 6 níveis) | Backend | 3 | `backend` | BE-5, BE-8 | — |
-| BE-15 | Backend: CRUD endpoints `/presets` | Backend | 5 | `backend` | BE-14, BE-10 | — |
-| FL-9 | Scenes (presets) — salvar/carregar combinação de volumes | Frontend | 5 | `frontend` | FL-5, BE-15 | `03-main-room-day.png` |
+| BE-14 | Backend: modelo `Preset` (nome + 6 níveis, por `client_id`) | Backend | 3 | `backend` | BE-5, BE-30 | — |
+| BE-15 | Backend: CRUD endpoints `/presets` | Backend | 5 | `backend` | BE-14, BE-30 | — |
+| FL-9 | Scenes (presets) — salvar/carregar combinação de volumes | Frontend | 5 | `frontend` | FL-5, FE-3, BE-15 | `03-main-room-day.png` |
 | BE-16 | Testes pytest: CRUD de tasks + presets | Testes | 3 | `test`,`backend` | BE-13, BE-15 | — |
 | FL-13 | Responsive behavior (MVP: mixer, lista, picker) | Frontend | 3 | `frontend` | FL-5, FL-7, FL-8 | — |
-| FL-14 | Accessibility pass (MVP: mixer, lista, picker, login) | Frontend | 3 | `frontend`,`a11y` | FL-3, FL-5, FL-7, FL-8, FL-9 | — |
+| FL-14 | Accessibility pass (MVP: mixer, lista, picker) | Frontend | 3 | `frontend`,`a11y` | FL-5, FL-7, FL-8, FL-9 | — |
 
-**Total Epic A**: 28 tickets · **~99 pontos**
+**Total Epic A**: 22 tickets · **~77 pontos**
 
-**Saída da Epic A**: usuário faz login com Google, mixa os 6 sons, gerencia tarefas por
-dia, salva/carrega presets — tudo persistido no Postgres, com a UI final (não mockup).
+**Saída da Epic A**: o usuário abre o app direto na sala (sem login), mixa os 6 sons,
+gerencia tarefas por dia, salva/carrega presets — tudo persistido no Postgres pelo ID anônimo
+do navegador, com a UI final (não mockup).
 
 ## 📊 EPIC B — Fase 2: Produtividade & Analytics
 
@@ -372,7 +377,7 @@ dia, salva/carrega presets — tudo persistido no Postgres, com a UI final (não
 |----|---------|------|--------|--------|-----------|--------|
 | BE-17 | Setup RabbitMQ + Celery + Celery Beat | Setup | 5 | `setup`,`backend` | BE-2 | — |
 | BE-18 | Backend: modelo `FocusSession` (task_id, duration, started/ended_at) | Backend | 3 | `backend` | BE-5, BE-12 | — |
-| BE-19 | Backend: endpoints iniciar/pausar/finalizar sessão de foco | Backend | 5 | `backend` | BE-18, BE-10 | — |
+| BE-19 | Backend: endpoints iniciar/pausar/finalizar sessão de foco | Backend | 5 | `backend` | BE-18, BE-30 | — |
 | BE-20 | Backend: rota `GET /stats` (minutos de foco por dia/semana) | Backend | 3 | `backend` | BE-18 | — |
 | FL-10 | Pomodoro timer bound to a note — anel de progresso 236px, 25/5 | Frontend | 5 | `frontend` | FL-7, BE-19 | `03-main-room-day.png` |
 | BE-21 | Testes pytest: `FocusSession` CRUD + cálculo de stats | Testes | 3 | `test`,`backend` | BE-19, BE-20 | — |
@@ -392,8 +397,8 @@ dias, resumo semanal automático via Telegram.
 |----|---------|------|--------|--------|-----------|--------|
 | BE-23 | Backend: modelo `Room` (nome, tema, contagem atual) | Backend | 3 | `backend` | BE-5 | — |
 | BE-24 | Backend: setup WebSocket em FastAPI | Setup | 5 | `setup`,`backend` | BE-3 | — |
-| BE-25 | Backend: rota `GET /rooms` (listar salas) | Backend | 3 | `backend` | BE-23, BE-10 | — |
-| BE-26 | Backend: endpoint `POST /rooms/{id}/join` | Backend | 5 | `backend` | BE-23, BE-10 | — |
+| BE-25 | Backend: rota `GET /rooms` (listar salas) | Backend | 3 | `backend` | BE-23 | — |
+| BE-26 | Backend: endpoint `POST /rooms/{id}/join` | Backend | 5 | `backend` | BE-23, BE-30 | — |
 | BE-27 | Backend: WebSocket `join_room` — broadcast de contagem para a sala | Backend | 5 | `backend` | BE-24, BE-26 | — |
 | BE-28 | Backend: Redis Pub/Sub — sincronizar contagem entre réplicas | Backend | 5 | `backend` | BE-2, BE-27 | — |
 | FL-12 | Shared rooms — 4 cards temáticos, presença em tempo real | Frontend | 8 | `frontend` | BE-25, BE-27, FL-2 | `08-shared-rooms.png` |
@@ -406,7 +411,34 @@ dias, resumo semanal automático via Telegram.
 **Saída da Epic C**: 4 salas temáticas com presença em tempo real via WebSocket + Redis
 Pub/Sub, sem gamificação (só contagem e avatares).
 
+## 📊 EPIC D — Fase 4: Contas e login com Google
+
+Fora da v1 (ver "Mudança de escopo" no início desta Parte 2). Os tickets são os mesmos do
+planejamento original, com as dependências ajustadas para o ID anônimo já existir.
+
+| ID | Summary | Tipo | Pontos | Labels | Depende de | Attach |
+|----|---------|------|--------|--------|-----------|--------|
+| BE-6 | Google Cloud Console: configurar OAuth2 (Client ID, consent screen) | Setup | 2 | `setup` | — | — |
+| BE-7 | Backend: rota `POST /auth/google` (valida JWT do Google) | Backend | 5 | `backend` | BE-3, BE-6 | — |
+| BE-8 | Backend: modelo `User` + upsert por `google_sub` | Backend | 3 | `backend` | BE-5, BE-7 | — |
+| BE-9 | Backend: emissão de JWT próprio (access + refresh) | Backend | 5 | `backend` | BE-8 | — |
+| BE-10 | Backend: middleware de autenticação (`@require_auth`) | Backend | 3 | `backend` | BE-9 | — |
+| BE-31 | Backend: vincular os dados do ID anônimo à conta no primeiro login | Backend | 3 | `backend` | BE-10, BE-30 | — |
+| FL-3 | Login screen — Google OAuth + entrada como convidado | Frontend | 3 | `frontend` | FL-2, BE-7 | `02-login.png` |
+| FE-2 | Auth context/hook global + proteção de rotas | Frontend | 3 | `frontend` | FL-3, BE-9 | — |
+| BE-11 | Testes pytest: `/auth/google` + validação de JWT | Testes | 3 | `test`,`backend` | BE-10 | — |
+
+**Total Epic D**: 9 tickets · **~30 pontos**
+
+**Saída da Epic D**: login com Google opcional; quem entra leva junto o que já tinha criado
+no navegador e passa a acessar os mesmos dados de qualquer dispositivo.
+
 ## 🔗 Notas de reconciliação (o que mudou em relação ao plano original — Parte 1)
+
+- **v1 sem login (outubro/2026)**: toda a Epic E2 original (auth) e os tickets `FL-3`/`FE-2`
+  foram para a Epic D. A tela de login (`02-login.png`) continua desenhada, mas só entra com
+  a Epic D. A entrada "como convidado" do design deixa de ser necessária na v1, porque todo
+  mundo já entra sem conta.
 
 - **FL-3 (Login) já inclui** o botão Google + fluxo de guest visualmente — por isso os
   antigos `E2-6/E2-7` (setup do botão, chamada ao backend) foram absorvidos dentro de
@@ -433,10 +465,11 @@ Pub/Sub, sem gamificação (só contagem e avatares).
 
 | Epic | Tickets | Story Points |
 |------|---------|---------------|
-| Epic A — Fundação & MVP | 28 | ~99 |
+| Epic A — Fundação & MVP | 22 | ~77 |
 | Epic B — Produtividade & Analytics | 10 | ~36 |
 | Epic C — Salas Compartilhadas | 10 | ~39 |
-| **Total** | **48** | **~174** |
+| Epic D — Contas e login com Google | 9 | ~30 |
+| **Total** | **51** | **~182** |
 
 ## 🏷️ Labels (padronizadas)
 
@@ -515,6 +548,9 @@ mode toggle works from the header on every route.
 
 ### FL-3 · Login screen
 **Points:** 3 · **Attach:** `screens/02-login.png`
+
+> **Fora da v1** — movido para a Epic D (Contas e login com Google). Na v1 o app abre direto
+> na sala, sem tela de login.
 
 Two-column layout (`1.05fr / 1fr`), Google OAuth, guest entry.
 
@@ -693,6 +729,8 @@ notes list on desktop; every control stays ≥44px.
 
 ### FL-14 · Accessibility pass
 **Points:** 3
+
+> Na v1 (sem login) a tela de login sai deste ticket; ela é verificada quando a Epic D entrar.
 
 Sliders carry `role="slider"` with `aria-valuenow` / `aria-label`; the day picker is a
 labelled dialog with arrow-key navigation; the timer announces phase changes via a polite

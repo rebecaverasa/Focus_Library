@@ -3,7 +3,27 @@
 > Technical reference moved out of the README. For the visual spec see
 > [DESIGN.md](DESIGN.md); for the backlog and tickets see [ROADMAP.md](ROADMAP.md).
 
-## 1. Authentication — OAuth2 flow
+## 1. Identity and authentication
+
+### 1.1 v1: anonymous browser ID (no login)
+
+The first version has **no login and no login screen**: the app opens straight into
+The room.
+
+1. On the first visit, the frontend generates a UUID and stores it in `localStorage`.
+2. Every API call sends it in the `X-Client-Id` header (an axios interceptor).
+3. The backend upserts a `Client` row for that ID (a FastAPI dependency, `get_client`) and
+   links tasks, presets and focus sessions to it in Postgres.
+
+Trade-off: the data lives on the server, but only the browser that holds the ID can reach
+it. Clearing site data or switching devices starts from scratch. The ID only identifies,
+it doesn't authenticate, so the API must never return data for an ID other than the one
+sent. That's fine for v1 because there is no personal data. Tickets: `BE-30` and `FE-3`.
+
+### 1.2 Later: Google OAuth2 (Epic D)
+
+Planned for after the MVP. Signing in will be optional, and on the first login the data of
+the anonymous ID is linked to the account (`BE-31`).
 
 Standard OAuth2 flow for SPA ("Sign in with Google"):
 
@@ -48,7 +68,8 @@ OAuth2 flow.
 | Layer | Technology | Notes |
 |---|---|---|
 | Backend API | Python + FastAPI | REST + automatic docs (Swagger) |
-| Authentication | Google OAuth2 + own JWT | `google-auth` (backend), `@react-oauth/google` (frontend) |
+| Identity (v1) | Anonymous browser ID (`X-Client-Id` header) | no login in the first version |
+| Authentication (Epic D) | Google OAuth2 + own JWT | `google-auth` (backend), `@react-oauth/google` (frontend) |
 | Real-time | WebSocket (FastAPI) + Redis Pub/Sub | synchronizes presence across backend replicas |
 | Queue / async tasks | Celery + RabbitMQ | session processing, weekly summary |
 | Scheduling | Celery Beat | triggers periodic jobs |
@@ -83,8 +104,8 @@ for learning without worrying about infra: kind/minikube local.
 
 ## 5. Roadmap (high-level view)
 
-1. **Local MVP**: FastAPI + Postgres + Google login + to-do list + frontend with sound mixer —
-   all via docker-compose
+1. **Local MVP**: FastAPI + Postgres + anonymous browser ID + to-do list + frontend with
+   sound mixer — all via docker-compose (Google login moved to a later phase)
 2. **Messaging**: Celery + RabbitMQ for the weekly summary (simple async job)
 3. **Real-time**: WebSocket + Redis Pub/Sub for shared rooms
 4. **CI**: GitHub Actions running tests on every PR

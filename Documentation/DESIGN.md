@@ -181,6 +181,10 @@ Não é uma tela de produto. A referência de paleta e tipografia para o time.
 
 ### 2 — Login (`Design/screens/02-login.png`)
 
+> **Fora da v1.** A primeira versão não tem login: o app abre direto em The room e cada
+> navegador é identificado por um ID anônimo. Esta tela fica guardada para a Epic D
+> (Contas e login com Google) — ver `Documentation/ROADMAP.md`, Parte 2.
+
 **Propósito:** entrar com Google, ou dar uma olhada como convidado.
 
 **Layout:** shell 1360×800, raio 18. Duas colunas `1.05fr / 1fr`. Coluna esquerda com padding
@@ -210,6 +214,8 @@ A tela principal. Três regiões: header, corpo de duas colunas, ambience strip.
 Marca 28px · nav (`Tabs`): tab ativa é uma pill com preenchimento `primary.light` e texto
 terracota, inativa é `text.secondary` 13.5px · `IconButton` dia/noite 34×34, raio 11, divider
 1px, sol/lua terracota · avatar 29px círculo sobre preenchimento panel + nome 12.5px.
+**Na v1 (sem login) o header não mostra avatar nem nome** — termina no botão dia/noite. O
+avatar volta com a Epic D.
 
 **Corpo** — `Grid` `1fr / 1.42fr`. A lista de tarefas é deliberadamente a coluna maior; o
 timer é a menor. Um divider de 1px separa as duas.
@@ -340,7 +346,7 @@ A tabela de tela-para-componente e as exceções técnicas, renderizadas para o 
 - **Timer** — 25/5 por padrão, conta regressivamente uma vez por segundo enquanto roda.
   Trocar de fase reseta o relógio. O anel varre de vazio a cheio ao longo da fase.
 - **Dia/noite** — um toggle repinta toda superfície. Respeitar `prefers-color-scheme` no
-  primeiro load, depois lembrar a escolha do usuário.
+  primeiro load, depois lembrar a escolha do usuário (na v1, no próprio navegador).
 - **Responsivo** — abaixo de 1100px a lista de tarefas empilha sob o timer e a ambience strip
   colapsa numa única barra que abre a sheet. Abaixo de 720px os seis cards de som viram
   duas colunas.
@@ -349,12 +355,12 @@ A tabela de tela-para-componente e as exceções técnicas, renderizadas para o 
 
 | State | Formato | Notas |
 |---|---|---|
-| `mode` | `'day' \| 'night'` | persistido por usuário |
+| `mode` | `'day' \| 'night'` | persistido no navegador (`localStorage`) na v1; por conta na Epic D |
 | `playing` | boolean | transporte master |
 | `master` | 0–100 | |
 | `levels` | `Record<SoundId, 0–100>` | seis ids fixos |
 | `scene` | string | nome do preset atual ou "Custom mix" |
-| `presets` | `{ name, levels }[]` | persistido no servidor |
+| `presets` | `{ name, levels }[]` | persistido no servidor, pelo ID anônimo do navegador |
 | `date` | ISO `YYYY-MM-DD` | dia selecionado para notas |
 | `calOpen`, `calMonth` | boolean, `YYYY-MM` | apenas do picker |
 | `tasksByDate` | `Record<ISODate, Task[]>` | `Task = { id, text, done, mins }` |
@@ -364,7 +370,8 @@ A tabela de tela-para-componente e as exceções técnicas, renderizadas para o 
 
 Fetching: tarefas por intervalo de data (o picker precisa saber quais dias têm notas —
 retornar um conjunto de datas com contagens para o mês visível), presets por usuário, e
-totais diários de foco para a semana do histórico.
+totais diários de foco para a semana do histórico. Na v1, "usuário" = o ID anônimo do
+navegador, enviado no header `X-Client-Id` em toda chamada.
 
 ## Exceções técnicas
 

@@ -4,7 +4,7 @@ Documento de contexto para quem implementa tickets de backend/infra (`BE-x`). Re
 está em `README.md`, `Documentation/ROADMAP.md`, `backend/commands.md` e no código.
 **Fontes da verdade:** o código atual em `backend/` e `docker/`, depois o ROADMAP (Parte 2
 para o backlog e dependências; Parte 1 para a descrição original E1–E6 de cada tarefa) e o
-`README.md` (arquitetura, fluxo OAuth, stack). Para entender **o que a UI vai consumir**, veja
+`Documentation/ARCHITECTURE.md` (identidade/auth, arquitetura, stack). Para entender **o que a UI vai consumir**, veja
 `Documentation/DESIGN.md` §"State" e §"Interações" e o arquivo `.claude/context/frontend.md`.
 
 Se este arquivo divergir do código, **vale o código** (e atualize este arquivo).
@@ -35,7 +35,7 @@ Se este arquivo divergir do código, **vale o código** (e atualize este arquivo
 | Testes | pytest 8 + httpx |
 | Lint/format | ruff (line-length 100, regras `E`, `F`, `I`, target py312) |
 
-**Previsto, ainda não instalado:** `google-auth` (BE-7), lib de JWT (ex.: `pyjwt` — BE-9),
+**Previsto, ainda não instalado:** `google-auth` e lib de JWT (ex.: `pyjwt`) só na Epic D,
 `redis` client, Celery + RabbitMQ (BE-17), WebSocket (BE-24, nativo do FastAPI/Starlette).
 Ao instalar: adicionar com versão fixa em `requirements.txt` (runtime) ou
 `requirements-dev.txt` (dev/test).
@@ -95,16 +95,27 @@ Convenções de modelagem (BE-5):
 
 ## Domínio e contratos previstos
 
-Fluxo de auth (README §3): frontend obtém o ID token do Google (`@react-oauth/google`) →
-`POST /auth/google` → backend valida com `google-auth` (assinatura + audience = Client ID) →
-upsert do usuário por `google_sub` → emite JWT próprio (access + refresh). Sem login por
-e-mail/senha. Também existe a entrada "como convidado" no frontend (sessão em memória).
+**Identidade na v1 — sem login** (decidido em outubro/2026; ROADMAP Parte 2 "Mudança de
+escopo" e `Documentation/ARCHITECTURE.md` §1.1):
+
+- O frontend gera um UUID por navegador (localStorage) e manda em toda chamada no header
+  **`X-Client-Id`** (FE-3).
+- O backend (BE-30) tem um model `Client` (PK = esse UUID) e uma dependency `get_client`
+  que valida o header (UUID válido, senão 400), faz upsert do `Client` e o injeta nas rotas.
+  Tasks, presets e focus sessions têm `client_id` (FK para `Client`).
+- Toda query filtra pelo `client_id` do header — nunca devolver dados de outro ID. O ID
+  identifica, mas não autentica; não guardar dado pessoal na v1.
+
+**Depois (Epic D)**: login com Google opcional — ID token do Google → `POST /auth/google` →
+valida com `google-auth` (assinatura + audience = Client ID) → upsert de `User` por
+`google_sub` → JWT próprio (access + refresh); no primeiro login, os dados do `client_id`
+passam para o usuário (BE-31). Sem login por e-mail/senha.
 
 Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 
-- **User**: `google_sub` (único), email, nome, foto; preferência de modo `day|night` (hoje a UI
-  guarda em localStorage).
-- **Task (nota do dia)**: pertence a `(user, date)`; `text`, `done`, `mins` logados (e estimativa
+- **Client** (v1): só o UUID do navegador + timestamps. (`User` com `google_sub`, email,
+  nome e foto só na Epic D.) A preferência de modo `day|night` fica no localStorage.
+- **Task (nota do dia)**: pertence a `(client, date)`; `text`, `done`, `mins` logados (e estimativa
   "25m estimate"). Endpoints: listar por data/intervalo, criar, atualizar, remover, e
   **contagem de notas por dia para um mês** (pontos do day picker).
 - **Preset (cena)**: `name` + seis níveis 0–100 com ids fixos: pages, rain, clock, whispers,
@@ -127,30 +138,33 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 | BE-3 ✅ | FastAPI + Alembic | BE-2 |
 | BE-4 ✅ | CI GitHub Actions | BE-3, FE-1 |
 | BE-5 ✅ | Convenções de schema + base de migrations | BE-2, BE-3 |
-| BE-6 | Google Cloud Console: OAuth2 (Client ID, consent screen) — manual, da usuária | — |
-| BE-7 | `POST /auth/google` (valida ID token do Google) | BE-3, BE-6 |
-| BE-8 | Model `User` + upsert por `google_sub` | BE-5, BE-7 |
-| BE-9 | JWT próprio (access + refresh) | BE-8 |
-| BE-10 | Middleware/dependency de auth (`require_auth`) | BE-9 |
-| BE-11 | pytest: `/auth/google` + validação de JWT | BE-10 |
-| BE-12 | Model `Task` (por data, user_id, mins) | BE-5, BE-8 |
-| BE-13 | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-10 |
-| BE-14 | Model `Preset` (nome + 6 níveis) | BE-5, BE-8 |
-| BE-15 | CRUD `/presets` | BE-14, BE-10 |
+| BE-30 | Identificação anônima: header `X-Client-Id`, model `Client`, dependency `get_client` | BE-5 |
+| BE-12 | Model `Task` (por data, client_id, mins) | BE-5, BE-30 |
+| BE-13 | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-30 |
+| BE-14 | Model `Preset` (nome + 6 níveis, por client_id) | BE-5, BE-30 |
+| BE-15 | CRUD `/presets` | BE-14, BE-30 |
 | BE-16 | pytest: CRUD tasks + presets | BE-13, BE-15 |
 | BE-17 | RabbitMQ + Celery + Celery Beat | BE-2 |
 | BE-18 | Model `FocusSession` | BE-5, BE-12 |
-| BE-19 | Endpoints iniciar/pausar/finalizar sessão | BE-18, BE-10 |
+| BE-19 | Endpoints iniciar/pausar/finalizar sessão | BE-18, BE-30 |
 | BE-20 | `GET /stats` (minutos por dia/semana) | BE-18 |
 | BE-21 | pytest: FocusSession + stats | BE-19, BE-20 |
 | BE-22 | Job Celery: resumo semanal via Telegram Bot API | BE-17, BE-20 |
 | BE-23 | Model `Room` | BE-5 |
 | BE-24 | WebSocket no FastAPI | BE-3 |
-| BE-25 | `GET /rooms` | BE-23, BE-10 |
-| BE-26 | `POST /rooms/{id}/join` | BE-23, BE-10 |
+| BE-25 | `GET /rooms` | BE-23 |
+| BE-26 | `POST /rooms/{id}/join` | BE-23, BE-30 |
 | BE-27 | WebSocket `join_room` — broadcast de contagem | BE-24, BE-26 |
 | BE-28 | Redis Pub/Sub entre réplicas | BE-2, BE-27 |
 | BE-29 | pytest: lógica de `join_room` | BE-26, BE-27 |
+| **Epic D (fora da v1)** | | |
+| BE-6 | Google Cloud Console: OAuth2 (Client ID, consent screen) — manual, da usuária | — |
+| BE-7 | `POST /auth/google` (valida ID token do Google) | BE-3, BE-6 |
+| BE-8 | Model `User` + upsert por `google_sub` | BE-5, BE-7 |
+| BE-9 | JWT próprio (access + refresh) | BE-8 |
+| BE-10 | Middleware/dependency de auth (`require_auth`) | BE-9 |
+| BE-31 | Vincular dados do `client_id` à conta no primeiro login | BE-10, BE-30 |
+| BE-11 | pytest: `/auth/google` + validação de JWT | BE-10 |
 
 As descrições originais mais detalhadas estão na Parte 1 do ROADMAP (E2-x = auth, E4-x =
 tasks/presets, E5-x = pomodoro/stats/celery, E6-x = salas).
