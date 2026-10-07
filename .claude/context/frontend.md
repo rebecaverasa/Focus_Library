@@ -34,9 +34,11 @@ gamificação (pontos, badges, streaks, rankings).
 | `@tanstack/react-query` 5 | fetching/cache dos dados do backend |
 | `axios` | cliente HTTP; base URL em `VITE_API_URL` (`frontend/.env.example`) |
 | `lucide-react` | ícones (FL-2): `size={18}` inline / 16 em botões, `strokeWidth={1.6}` |
+| `vitest` (dev) | testes unitários (FE-3): `npm test` = `vitest run`, ambiente `node` (sem jsdom) |
 
 **Ainda não instalados, previstos pelo design/roadmap:** `@mui/x-date-pickers` (opcional no FL-8), Recharts
-(opcional no FL-11; o gráfico pode ser feito à mão), Vitest + Testing Library, Playwright;
+(opcional no FL-11; o gráfico pode ser feito à mão), Testing Library + jsdom (para testar
+componentes), Playwright;
 `@react-oauth/google` só na Epic D (FL-3). Instale só quando o ticket precisar.
 
 ## Estrutura e convenções do código
@@ -55,6 +57,15 @@ frontend/
 │   │   ├── NavTabs.tsx        Tabs com Tab component={Link}; aba ativa derivada da URL (matchPath)
 │   │   ├── navItems.ts        rótulos + rotas, na ordem do header
 │   │   └── ColorModeToggle.tsx  IconButton 34×34, Sun/Moon do lucide, aria-label "Switch to … mode"
+│   ├── api/                   cliente HTTP (FE-3)
+│   │   ├── clientId.ts        getClientId(): UUID do navegador em localStorage
+│   │   │                      ('focus-library:client-id'); inválido → gera outro; storage
+│   │   │                      quebrado → id em memória; fallback sem crypto.randomUUID
+│   │   ├── http.ts            instância axios `http` (baseURL = VITE_API_URL || :8000) +
+│   │   │                      interceptor que põe `X-Client-Id` em toda requisição
+│   │   ├── clients.ts         getCurrentClient() → GET /clients/me ({id, created_at, last_seen_at})
+│   │   └── *.test.ts          testes Vitest ao lado do módulo
+│   ├── vite-env.d.ts          tipagem de import.meta.env (VITE_API_URL)
 │   ├── components/
 │   │   └── ViewPlaceholder.tsx  kicker + título + nota, para views ainda não implementadas
 │   ├── features/
@@ -88,7 +99,10 @@ frontend/
   `src/components/` (peças reutilizáveis), `src/features/<área>/` (room, mixer, notes, timer,
   history, rooms, auth), `src/api/` (axios + hooks do react-query), `src/routes/`.
   A pasta `src/components/teste/...` é um rascunho da usuária — não mexer.
-- CI (`.github/workflows/ci.yml`): `npm ci`, `npm run lint`, `npm run build` (Node 24).
+- CI (`.github/workflows/ci.yml`): `npm ci`, `npm run lint`, `npm test`, `npm run build` (Node 24).
+- **Chamadas à API**: sempre pela instância `http` de `@/api/http` (nunca `axios` direto),
+  para o `X-Client-Id` ir junto. Funções de API ficam em `src/api/<recurso>.ts`; testes
+  trocam `http.defaults.adapter` em vez de usar rede.
 
 ## Design tokens (resumo — detalhes em DESIGN.md §"Design tokens")
 
@@ -232,7 +246,7 @@ anônimo do navegador (header `X-Client-Id`, ver FE-3).
 | FE-1 ✅ | Scaffold Vite + React + TS | BE-1 | — |
 | FL-1 ✅ (PR #7) | Tema, fontes, dia/noite | FE-1 | 01 |
 | FL-2 ✅ | App shell + header + rotas | FL-1 | 03 |
-| FE-3 | ID anônimo do navegador (UUID no localStorage + header `X-Client-Id` no axios) | FE-1 | — |
+| FE-3 ✅ | ID anônimo do navegador (UUID no localStorage + header `X-Client-Id` no axios) | FE-1 | — |
 | FL-4 | Audio engine (Web Audio, 6 loops) | FL-1 | — |
 | FL-5 | Ambience strip (mixer) | FL-4, FL-2 | 03 |
 | FL-6 | Mixer expandido (sheet) | FL-5 | 06 |
