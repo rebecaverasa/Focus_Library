@@ -19,6 +19,9 @@ export function ColorModeToggle() {
         borderColor: 'divider',
         color: 'primary.main',
         '&:hover': { backgroundColor: 'hairline' },
+        // 34px visual from sm up, with a 44px clickable box.
+        position: 'relative',
+        '&::after': { content: '""', position: 'absolute', inset: { xs: 0, sm: -6 } },
       }}
     >
       <Icon size={18} strokeWidth={1.6} aria-hidden />

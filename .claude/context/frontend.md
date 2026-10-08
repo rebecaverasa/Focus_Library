@@ -360,3 +360,8 @@ Decidido em outubro/2026 (ROADMAP Parte 2, "Mudança de escopo"):
   `sceneCaption(scene, levels, playing)` agora recebe o nome. Carregar = `applyLevels` + `play()`.
 - Menu do chip: botão "..." ou botão direito/tecla de menu; Rename/Delete (sem confirmar).
 - O backend só aceita CORS de `http://localhost:5173`: para testar com o backend real use essa porta.
+
+## FL-13 (validação responsiva MVP)
+
+- Alvos 44px: controles compactos mantêm o visual do design e ganham área clicável de 44px por `::after` absoluto (tabs do header desenham a pílula em `::before`; toggle, chips de cena, setas/Today do picker, sliders do mixer). Não aplicar em elementos com `overflow: hidden`. Sheet: slider 44px em todas as larguras. Picker: células 44px também em tablets touch (`pointer: coarse`, popover 344px); com mouse ≥720px as células seguem 34px (design).
+- Verificação: Edge headless via CDP (`Emulation.setDeviceMetricsOverride`) permite 360px reais; sem Playwright. Inputs nativos 9x9 dos sliders MUI são falsos positivos.

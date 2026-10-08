@@ -132,8 +132,8 @@ function SoundRow({ sound, level, playing, onChange, onToggle }: SoundRowProps) 
           '& .MuiSlider-root': {
             color: active ? palette.primary.main : idle,
             transition: `color ${FADE}`,
-            // 44px touch target on phones (6px rail + padding), 32px from sm up.
-            py: { xs: '19px', sm: '13px' },
+            // 44px target (6px rail + padding) at every width.
+            py: '19px',
             gridColumn: { xs: '1 / 3', sm: 'auto' },
             gridRow: { xs: 2, sm: 'auto' },
             '@media (pointer: coarse)': { '& .MuiSlider-thumb': { width: 20, height: 20 } },

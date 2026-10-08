@@ -135,6 +135,8 @@ export function AmbienceStrip() {
               aria-valuetext={`${master}%`}
               sx={{
                 py: '8px',
+                // Rail + thumb are ~22px tall; grow the pointer target to 44px.
+                '&::after': { content: '""', position: 'absolute', inset: '-11px 0' },
                 '& .MuiSlider-rail, & .MuiSlider-track': { height: 5, borderRadius: '3px' },
                 '& .MuiSlider-thumb': { borderColor: 'background.panel' },
               }}
