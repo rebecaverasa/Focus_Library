@@ -276,7 +276,7 @@ anônimo do navegador (header `X-Client-Id`, ver FE-3).
 | FL-6 ✅ | Mixer expandido (sheet) | FL-5 | 06 |
 | FL-7 ✅ | Lista de notas por dia (`features/notes/`, `api/tasks.ts`, QueryClientProvider em `main.tsx`; `date` é estado em `RoomPage`, FL-8 assume) | FL-2, FE-3, BE-13 | 03 |
 | FL-8 ✅ | Day picker (`features/notes/DayPicker.tsx` + `calendarState.ts`; grade própria, sem `@mui/x-date-pickers`; Popover ≥720px, Dialog abaixo; pontos via `listTaskDays` → `GET /tasks/days`) | FL-7 | 04 |
-| FL-9 | Cenas (presets) | FL-5, FE-3, BE-15 | 03 |
+| FL-9 ✅ | Cenas (presets; `features/scenes/`, `api/presets.ts`) | FL-5, FE-3, BE-15 | 03 |
 | FL-13 / FL-14 | Responsivo / acessibilidade (MVP) | vários | — |
 | FL-10 | Pomodoro vinculado à nota | FL-7, BE-19 | 03 |
 | FL-11 | Dashboard de histórico | BE-20 | 07 |
@@ -348,3 +348,15 @@ Decidido em outubro/2026 (ROADMAP Parte 2, "Mudança de escopo"):
 - Verificação headless: o Edge `--headless` impõe largura mínima ~500px, então para 360/390
   use um HTML temporário com `<iframe>` na largura desejada servido de `frontend/public/`
   (apague depois). `--force-dark-mode` é invertido/instável; use `--user-data-dir` novo por captura.
+
+## Cenas (FL-9)
+
+- `features/scenes/`: `sceneState.ts` (seeds, `currentScene`, `cleanName`, `barHeight`), `seedScenes.ts`
+  (`loadScenes`: GET /presets e, se vazio e ainda não semeado, POST das 3 seeds em sequência; promise
+  em voo única + flag `focus-library:scenes-seeded:<clientId>` no localStorage), `useScenes.ts`
+  (TanStack Query `['presets']`), `useSceneControl.ts` (liga cenas ao mixer), `SceneChips.tsx`,
+  `SceneNameDialog.tsx`. Linha SCENES fica no fim da `AmbienceStrip` (todos os tamanhos, chips quebram linha).
+- Cena atual = preset cujos níveis == níveis ao vivo (prefere o último carregado); senão "Custom mix".
+  `sceneCaption(scene, levels, playing)` agora recebe o nome. Carregar = `applyLevels` + `play()`.
+- Menu do chip: botão "..." ou botão direito/tecla de menu; Rename/Delete (sem confirmar).
+- O backend só aceita CORS de `http://localhost:5173`: para testar com o backend real use essa porta.

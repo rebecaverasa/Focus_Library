@@ -6,7 +6,7 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { SOUNDS } from '@/audio';
 import type { SoundDef } from '@/audio';
-import { arrowKeyHandler, formatLevel, isCardActive, sceneName } from './mixerState';
+import { arrowKeyHandler, formatLevel, isCardActive } from './mixerState';
 import type { Mixer } from './useMixer';
 
 const FADE = '420ms cubic-bezier(0.4, 0, 0.2, 1)';
@@ -16,11 +16,13 @@ interface MixerSheetProps {
   open: boolean;
   onClose: () => void;
   mixer: Mixer;
+  /** Name of the scene the live mix matches ('Custom mix' otherwise). */
+  scene: string;
 }
 
 /** Full mixer: six rows sharing the strip's state, opened from the strip. */
-export function MixerSheet({ open, onClose, mixer }: MixerSheetProps) {
-  const { levels, playing, setLevel, toggleSound } = mixer;
+export function MixerSheet({ open, onClose, mixer, scene }: MixerSheetProps) {
+  const { playing, setLevel, toggleSound, levels } = mixer;
   return (
     <Drawer
       anchor="bottom"
@@ -67,7 +69,7 @@ export function MixerSheet({ open, onClose, mixer }: MixerSheetProps) {
           Ambience
         </Typography>
         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 12.5 }}>
-          {playing ? sceneName(levels) : 'Paused'}
+          {playing ? scene : 'Paused'}
         </Typography>
         <Typography variant="caption" sx={{ ml: 'auto', color: 'text.secondary' }}>
           Arrow keys nudge by 4
