@@ -63,7 +63,8 @@ export function SoundCard({ sound, level, playing, onChange, onToggle }: SoundCa
       {/* Sibling of the slider, so dragging or clicking the rail never toggles the card. */}
       <ButtonBase
         onClick={onToggle}
-        aria-label={`${level > 0 ? 'Mute' : 'Unmute'} ${sound.label}`}
+        // No aria-label: the name is the visible text (WCAG 2.5.3); pressed = sound is on.
+        aria-pressed={level > 0}
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -78,6 +79,7 @@ export function SoundCard({ sound, level, playing, onChange, onToggle }: SoundCa
           <Icon size={18} strokeWidth={1.6} aria-hidden />
           <Typography
             variant="caption"
+            aria-hidden
             sx={{ color: 'text.secondary', fontVariantNumeric: 'tabular-nums' }}
           >
             {formatLevel(level, playing)}

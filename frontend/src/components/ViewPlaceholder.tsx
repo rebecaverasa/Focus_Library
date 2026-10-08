@@ -11,7 +11,13 @@ interface ViewPlaceholderProps {
 export function ViewPlaceholder({ kicker, title, note }: ViewPlaceholderProps) {
   return (
     <Stack spacing={1.5} sx={{ px: { xs: 2, sm: 6 }, py: { xs: 4, sm: 5.5 }, maxWidth: 720 }}>
-      <Typography variant="h6" sx={{ color: 'primary.main' }}>
+      <Typography
+        variant="h6"
+        sx={{
+          color: (t) =>
+            t.palette.mode === 'light' ? t.palette.primary.dark : t.palette.primary.main,
+        }}
+      >
         {kicker}
       </Typography>
       <Typography variant="h2" component="h1" sx={{ fontSize: { xs: 28, sm: 30 } }}>

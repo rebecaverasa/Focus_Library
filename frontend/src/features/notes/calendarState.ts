@@ -43,6 +43,14 @@ export function monthCells(month: string): (string | null)[] {
   return cells;
 }
 
+/** `monthCells` split into Monday-first rows of 7 (the last row may be shorter), for ARIA rows. */
+export function monthWeeks(month: string): (string | null)[][] {
+  const cells = monthCells(month);
+  return Array.from({ length: Math.ceil(cells.length / 7) }, (_, i) =>
+    cells.slice(i * 7, i * 7 + 7),
+  );
+}
+
 /** Arrow-key movement in the grid: left/right = day, up/down = week. */
 export function keyDelta(key: string): number | null {
   switch (key) {

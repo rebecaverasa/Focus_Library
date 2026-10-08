@@ -34,6 +34,7 @@ gamificação (pontos, badges, streaks, rankings).
 | `@tanstack/react-query` 5 | fetching/cache dos dados do backend |
 | `axios` | cliente HTTP; base URL em `VITE_API_URL` (`frontend/.env.example`) |
 | `lucide-react` | ícones (FL-2): `size={18}` inline / 16 em botões, `strokeWidth={1.6}` |
+| `axe-core` (dev, FL-14) | auditoria de a11y rodada à mão via Edge headless/CDP (injeta `axe.min.js`); não há teste automatizado dele |
 | `vitest` (dev) | testes unitários (FE-3): `npm test` = `vitest run`, ambiente `node` (sem jsdom) |
 
 **Ainda não instalados, previstos pelo design/roadmap:** `@mui/x-date-pickers` (opcional no FL-8), Recharts
@@ -277,7 +278,7 @@ anônimo do navegador (header `X-Client-Id`, ver FE-3).
 | FL-7 ✅ | Lista de notas por dia (`features/notes/`, `api/tasks.ts`, QueryClientProvider em `main.tsx`; `date` é estado em `RoomPage`, FL-8 assume) | FL-2, FE-3, BE-13 | 03 |
 | FL-8 ✅ | Day picker (`features/notes/DayPicker.tsx` + `calendarState.ts`; grade própria, sem `@mui/x-date-pickers`; Popover ≥720px, Dialog abaixo; pontos via `listTaskDays` → `GET /tasks/days`) | FL-7 | 04 |
 | FL-9 ✅ | Cenas (presets; `features/scenes/`, `api/presets.ts`) | FL-5, FE-3, BE-15 | 03 |
-| FL-13 / FL-14 | Responsivo / acessibilidade (MVP) | vários | — |
+| FL-13 ✅ / FL-14 ✅ | Responsivo / acessibilidade (MVP) | vários | — |
 | FL-10 | Pomodoro vinculado à nota | FL-7, BE-19 | 03 |
 | FL-11 | Dashboard de histórico | BE-20 | 07 |
 | FL-12 | Salas compartilhadas | BE-25, BE-27, FL-2 | 08 |
@@ -365,3 +366,24 @@ Decidido em outubro/2026 (ROADMAP Parte 2, "Mudança de escopo"):
 
 - Alvos 44px: controles compactos mantêm o visual do design e ganham área clicável de 44px por `::after` absoluto (tabs do header desenham a pílula em `::before`; toggle, chips de cena, setas/Today do picker, sliders do mixer). Não aplicar em elementos com `overflow: hidden`. Sheet: slider 44px em todas as larguras. Picker: células 44px também em tablets touch (`pointer: coarse`, popover 344px); com mouse ≥720px as células seguem 34px (design).
 - Verificação: Edge headless via CDP (`Emulation.setDeviceMetricsOverride`) permite 360px reais; sem Playwright. Inputs nativos 9x9 dos sliders MUI são falsos positivos.
+
+## FL-14 (acessibilidade MVP)
+
+- Auditado com axe-core 4.x (Edge headless + CDP) em dia/noite: base, picker (popover e dialog 390px), sheet,
+  menu de cena, diálogo de salvar, lista com erro. Sem violações; resta só `region` (moderate, best-practice)
+  no `Menu` de cenas (portal sem landmark).
+- Tokens ajustados para AA (4.5:1): dia `text.secondary` `#6b5f55`, `primary.dark` `#7f4b2e`, `error` `#9c4a33`;
+  noite `text.secondary` `#b8a99b`. Texto/ícone sobre terracota ou sage sólidos usa `primary.contrastText` /
+  `success.contrastText` (`#2b2421`), não creme. Texto terracota sobre fundo claro (marca "FL", kicker, label
+  focado) usa tinta `primary.dark` no dia. `src/theme/contrast.test.ts` trava os pares no CI.
+- `prefers-reduced-motion`: regra global no `MuiCssBaseline` zera animações/transições (cobre as transições JS do
+  MUI: Drawer/Popover/Dialog, que ignoram `@media` por usarem estilo inline).
+- Picker: `role="dialog"` + `aria-label` no Popover (e no paper do Dialog), grade com `role="row"` reais
+  (`monthWeeks`), foco inicial no dia selecionado. Cards/linhas do mixer: botão de mute sem `aria-label`, usa
+  `aria-pressed` (nome = texto visível, WCAG 2.5.3); valor do card é `aria-hidden` (o slider anuncia).
+- Sliders usam `input[type=range]` do MUI (papel `slider` implícito, `aria-valuenow/min/max/valuetext`).
+- Diálogo de nome de cena: foco no campo via `useEffect` + `setTimeout(0)` (o trap do Modal devolvia o foco ao
+  gatilho quando aberto com Enter, anulando o `autoFocus`).
+- **Fora do escopo (fica para FL-14b):** timer + live region de fase (depende do FL-10) e dashboard. Login (Epic D).
+- Checkbox de tarefa não concluída usa borda `text.secondary` a 75% (3:1, WCAG 1.4.11). A borda do campo "Add a
+  task" e dos chips segue o `divider` do design (baixo contraste de contorno) — decisão de design não alterada.

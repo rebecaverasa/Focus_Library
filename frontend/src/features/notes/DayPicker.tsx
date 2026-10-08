@@ -11,7 +11,7 @@ import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-rea
 import { listTaskDays } from '@/api/tasks';
 import {
   keyDelta,
-  monthCells,
+  monthWeeks,
   monthLabel,
   monthOf,
   parseISO,
@@ -87,9 +87,11 @@ export function DayPicker({ date, onSelect }: DayPickerProps) {
         <Dialog
           open={open}
           onClose={close}
-          aria-label="Choose a day"
           slotProps={{
-            paper: { sx: { m: 2, width: '100%', maxWidth: 400, borderRadius: '16px' } },
+            paper: {
+              'aria-label': 'Choose a day',
+              sx: { m: 2, width: '100%', maxWidth: 400, borderRadius: '16px' },
+            },
           }}
         >
           {body}
@@ -103,6 +105,8 @@ export function DayPicker({ date, onSelect }: DayPickerProps) {
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
           slotProps={{
             paper: {
+              // Popover paper has no dialog role of its own.
+              role: 'dialog',
               'aria-label': 'Choose a day',
               sx: { width: touch ? 344 : 286, mt: 1, borderRadius: '16px', boxShadow: 3 },
             },
@@ -131,6 +135,12 @@ function CalendarBody({ date, compact, onPick }: CalendarBodyProps) {
   // Dots: counts for the visible month; a failed request just means no dots.
   const days = useQuery({ queryKey: ['task-days', month], queryFn: () => listTaskDays(month) });
   const withNotes = new Set((days.data ?? []).filter((d) => d.count > 0).map((d) => d.date));
+
+  // Opening lands focus on the selected day so arrows work immediately.
+  useEffect(() => {
+    document.getElementById(`day-${date}`)?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only on open (mount)
+  }, []);
 
   useEffect(() => {
     if (!moved.current) return;
@@ -194,22 +204,27 @@ function CalendarBody({ date, compact, onPick }: CalendarBodyProps) {
             {w}
           </Typography>
         ))}
-        {monthCells(month).map((iso, i) =>
-          iso === null ? (
-            <span key={`pad-${i}`} aria-hidden />
-          ) : (
-            <DayCell
-              key={iso}
-              iso={iso}
-              size={size}
-              selected={iso === date}
-              isToday={iso === today}
-              hasNotes={withNotes.has(iso)}
-              tabbable={iso === tabbable}
-              onPick={onPick}
-            />
-          ),
-        )}
+        {monthWeeks(month).map((week, w) => (
+          // display: contents keeps the 7-column grid while exposing real ARIA rows.
+          <Box key={w} role="row" sx={{ display: 'contents' }}>
+            {week.map((iso, i) =>
+              iso === null ? (
+                <span key={`pad-${i}`} aria-hidden />
+              ) : (
+                <DayCell
+                  key={iso}
+                  iso={iso}
+                  size={size}
+                  selected={iso === date}
+                  isToday={iso === today}
+                  hasNotes={withNotes.has(iso)}
+                  tabbable={iso === tabbable}
+                  onPick={onPick}
+                />
+              ),
+            )}
+          </Box>
+        ))}
       </Box>
 
       <Box
@@ -307,7 +322,7 @@ function DayCell({ iso, size, selected, isToday, hasNotes, tabbable, onPick }: D
         fontFamily: t.typography.button.fontFamily,
         fontSize: 13,
         fontVariantNumeric: 'tabular-nums',
-        color: selected ? '#fbf6ee' : 'text.primary',
+        color: selected ? 'primary.contrastText' : 'text.primary',
         bgcolor: selected ? 'primary.main' : isToday ? 'primary.light' : 'transparent',
         fontWeight: selected ? 700 : 500,
         '&:hover': { bgcolor: selected ? 'primary.main' : 'action.hover' },
@@ -321,7 +336,7 @@ function DayCell({ iso, size, selected, isToday, hasNotes, tabbable, onPick }: D
               height: 4,
               ml: '-2px',
               borderRadius: '50%',
-              bgcolor: selected ? '#fbf6ee' : 'primary.main',
+              bgcolor: selected ? 'primary.contrastText' : 'primary.main',
             }
           : undefined,
       })}

@@ -51,11 +51,13 @@ const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
 const tokens = {
   day: {
     background: { default: '#f4ece0', paper: '#fbf6ee', panel: '#efe5d6' },
-    text: { primary: '#3d332b', secondary: '#7f7267' },
+    // secondary darkened from the prototype's #7f7267 (3.7-4.3:1) to reach 4.5:1 on every day surface.
+    text: { primary: '#3d332b', secondary: '#6b5f55' },
     divider: 'rgba(61,51,43,0.14)',
     hairline: 'rgba(61,51,43,0.08)',
-    primary: { main: '#c98a63', light: '#f0d9c8', dark: '#8a5334', contrastText: '#fbf6ee' },
-    success: { main: '#9fae8c', light: '#e2e8d9', dark: '#5c6a4c', contrastText: '#fbf6ee' },
+    // dark/contrastText tuned for AA: terracota ink on tints and ink (not cream) on solid terracota.
+    primary: { main: '#c98a63', light: '#f0d9c8', dark: '#7f4b2e', contrastText: '#2b2421' },
+    success: { main: '#9fae8c', light: '#e2e8d9', dark: '#5c6a4c', contrastText: '#2b2421' },
     secondary: { main: '#b3a4c2', light: '#e5dfec', dark: '#5f5273', contrastText: '#fbf6ee' },
     shadowInk: '61,51,43',
   },
@@ -64,7 +66,8 @@ const tokens = {
     // tints below are derived the same way (main hue sunk into the night paper).
     // "dark" flips to the light tint so ink-on-tint text stays readable.
     background: { default: '#2b2421', paper: '#352d28', panel: '#241e1b' },
-    text: { primary: '#f1e7db', secondary: '#a99a8c' },
+    // secondary lifted from #a99a8c so it also clears 4.5:1 on the night terracota tint.
+    text: { primary: '#f1e7db', secondary: '#b8a99b' },
     divider: 'rgba(241,231,219,0.16)',
     hairline: 'rgba(241,231,219,0.09)',
     primary: { main: '#e3aa7d', light: '#4a3a2e', dark: '#f0d9c8', contrastText: '#2b2421' },
@@ -108,7 +111,7 @@ export function buildTheme(mode: ColorMode): Theme {
       // Keep MUI's info/warning/error away from Material blue & co.
       info: t.secondary,
       warning: t.primary,
-      error: { main: mode === 'day' ? '#b5654a' : '#e29a80' },
+      error: { main: mode === 'day' ? '#9c4a33' : '#e29a80' },
       common: { black: '#3d332b', white: '#fbf6ee' },
       action: {
         hover: t.hairline,
@@ -184,6 +187,17 @@ export function buildTheme(mode: ColorMode): Theme {
           body: {
             fontVariantNumeric: 'tabular-nums',
             transition: `background-color 420ms ${EASE}, color 420ms ${EASE}`,
+          },
+          // One switch for every transition: MUI's JS transitions (Drawer, Popover, Dialog) set
+          // inline durations, so only !important reliably honours prefers-reduced-motion.
+          '@media (prefers-reduced-motion: reduce)': {
+            '*, *::before, *::after': {
+              animationDuration: '0.01ms !important',
+              animationIterationCount: '1 !important',
+              transitionDuration: '0.01ms !important',
+              transitionDelay: '0ms !important',
+              scrollBehavior: 'auto !important',
+            },
           },
           '*:focus-visible': focusRing,
           '*:focus:not(:focus-visible)': { outline: 'none' },
@@ -264,6 +278,8 @@ export function buildTheme(mode: ColorMode): Theme {
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
+            // MUI fades placeholders to ~40% opacity (≈2:1); keep them at the AA secondary ink.
+            '& input::placeholder': { color: t.text.secondary, opacity: 1 },
             borderRadius: 12,
             backgroundColor: t.background.paper,
             '& .MuiOutlinedInput-notchedOutline': { borderColor: t.divider },
@@ -306,6 +322,12 @@ export function buildTheme(mode: ColorMode): Theme {
               color: mode === 'day' ? t.primary.dark : t.primary.main,
             },
           },
+        },
+      },
+      MuiInputLabel: {
+        // Focused label is text: use the AA-safe ink, not the raw terracota.
+        styleOverrides: {
+          root: { '&.Mui-focused': { color: mode === 'day' ? t.primary.dark : t.primary.main } },
         },
       },
       MuiDivider: {

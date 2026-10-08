@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
+import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { Check, X } from 'lucide-react';
 import type { Task } from '@/api/tasks';
@@ -46,9 +47,10 @@ export function TaskRow({ task, active = false, onToggle, onRemove }: TaskRowPro
             height: 22,
             borderRadius: '50%',
             border: '1.5px solid',
-            borderColor: done ? 'success.main' : t.palette.divider,
+            // 3:1 against the row (WCAG 1.4.11): the hairline divider is too faint for a control.
+            borderColor: done ? 'success.main' : alpha(t.palette.text.secondary, 0.75),
             bgcolor: done ? 'success.main' : 'transparent',
-            color: '#fbf6ee',
+            color: 'success.contrastText',
             display: 'grid',
             placeItems: 'center',
             transition: 'background-color 420ms cubic-bezier(0.4,0,0.2,1)',
@@ -87,7 +89,7 @@ export function TaskRow({ task, active = false, onToggle, onRemove }: TaskRowPro
           flexShrink: 0,
           fontWeight: 600,
           fontSize: 12,
-          ...(active && { bgcolor: 'primary.main', color: '#fbf6ee' }),
+          ...(active && { bgcolor: 'primary.main', color: 'primary.contrastText' }),
           ...(!active && { borderColor: t.palette.divider, color: 'text.secondary' }),
         })}
       />
