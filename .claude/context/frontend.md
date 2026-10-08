@@ -274,7 +274,7 @@ anônimo do navegador (header `X-Client-Id`, ver FE-3).
 | FL-4 ✅ | Audio engine (Web Audio, 6 loops) | FL-1 | — |
 | FL-5 ✅ | Ambience strip (mixer) | FL-4, FL-2 | 03 |
 | FL-6 ✅ | Mixer expandido (sheet) | FL-5 | 06 |
-| FL-7 | Lista de notas por dia | FL-2, FE-3, BE-13 | 03 |
+| FL-7 ✅ | Lista de notas por dia (`features/notes/`, `api/tasks.ts`, QueryClientProvider em `main.tsx`; `date` é estado em `RoomPage`, FL-8 assume) | FL-2, FE-3, BE-13 | 03 |
 | FL-8 | Day picker | FL-7 | 04 |
 | FL-9 | Cenas (presets) | FL-5, FE-3, BE-15 | 03 |
 | FL-13 / FL-14 | Responsivo / acessibilidade (MVP) | vários | — |
