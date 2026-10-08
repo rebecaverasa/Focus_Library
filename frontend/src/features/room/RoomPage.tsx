@@ -6,8 +6,8 @@ import { TaskList } from '@/features/notes/TaskList';
 import { todayISO } from '@/features/notes/taskState';
 
 export function RoomPage() {
-  // Selected day; FL-8's picker will own the setter.
-  const [date] = useState(todayISO);
+  // Selected day, driven by the day picker in the list header.
+  const [date, setDate] = useState(todayISO);
 
   return (
     <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
@@ -34,7 +34,7 @@ export function RoomPage() {
           />
         </Box>
         <Box sx={{ p: { xs: '24px 16px', sm: '32px 28px', lg: '44px 42px' } }}>
-          <TaskList date={date} />
+          <TaskList date={date} onDateChange={setDate} />
         </Box>
       </Box>
       <AmbienceStrip />
