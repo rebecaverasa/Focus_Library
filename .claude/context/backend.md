@@ -144,7 +144,11 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
   (fire 74 / rain 40 / pages 12), Quiet Stacks (keys 46 / whispers 38 / pages 20 / clock 16).
   **Model pronto (BE-14):** tabela `presets` = `client_id` (FK CASCADE, índice), `name` (String 60) e uma
   coluna Integer NOT NULL (default 0) por som, cada uma com CHECK 0..100. `PresetRead` (sem `client_id`) e
-  `PresetCreate` (nome trimado 1..60, seis níveis obrigatórios, extras proibidos). CRUD = BE-15.
+  `PresetCreate` (nome trimado 1..60, seis níveis obrigatórios, extras proibidos).
+  **API pronta (BE-15)** — exige `X-Client-Id`; preset de outro client/inexistente = 404; id não-UUID = 422:
+  `GET /presets` (por `created_at, id`), `POST /presets` (201), `PATCH /presets/{id}` (parcial: name e/ou níveis;
+  vazio, `null` ou campo extra = 422), `DELETE /presets/{id}` (204). Código: `schemas/preset.py` (PresetUpdate),
+  `services/presets.py`, `api/routes/presets.py`. As seeds das 3 cenas NÃO ficam no backend (FL-9 as cria no front).
 - **FocusSession**: task, duração, started/ended_at; foco padrão 25 / pausa 5. Completar a
   tarefa encerra a sessão e loga os minutos.
 - **Stats**: totais diários de foco dos últimos 7 dias, total, média diária, nº de sessões,
@@ -166,7 +170,7 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 | BE-12 ✅ | Model `Task` (por data, client_id, mins) | BE-5, BE-30 |
 | BE-13 ✅ | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-30 |
 | BE-14 ✅ | Model `Preset` (nome + 6 níveis, por client_id) | BE-5, BE-30 |
-| BE-15 | CRUD `/presets` | BE-14, BE-30 |
+| BE-15 ✅ | CRUD `/presets` | BE-14, BE-30 |
 | BE-16 | pytest: CRUD tasks + presets | BE-13, BE-15 |
 | BE-17 | RabbitMQ + Celery + Celery Beat | BE-2 |
 | BE-18 | Model `FocusSession` | BE-5, BE-12 |

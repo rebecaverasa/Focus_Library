@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, model_validator
 
 from app.models.preset import LEVEL_MAX, LEVEL_MIN, PRESET_NAME_MAX_LENGTH
 
@@ -37,3 +37,26 @@ class PresetCreate(PresetLevels):
     model_config = ConfigDict(extra="forbid")
 
     name: PresetName
+
+
+class PresetUpdate(BaseModel):
+    """Partial update (rename and/or change levels). Unknown fields are a 422."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: PresetName | None = None
+    pages: Level | None = None
+    rain: Level | None = None
+    clock: Level | None = None
+    whispers: Level | None = None
+    fire: Level | None = None
+    keys: Level | None = None
+
+    @model_validator(mode="after")
+    def _at_least_one_real_value(self):
+        # An empty body is almost surely a client bug, and null would violate NOT NULL.
+        if not self.model_fields_set:
+            raise ValueError("Send at least one field to change.")
+        if any(getattr(self, name) is None for name in self.model_fields_set):
+            raise ValueError("Fields cannot be null.")
+        return self
