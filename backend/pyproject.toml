@@ -7,3 +7,4 @@ select = ["E", "F", "I"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: needs a real Postgres (TEST_DATABASE_URL); skipped without it"]

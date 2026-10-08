@@ -171,7 +171,7 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 | BE-13 ✅ | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-30 |
 | BE-14 ✅ | Model `Preset` (nome + 6 níveis, por client_id) | BE-5, BE-30 |
 | BE-15 ✅ | CRUD `/presets` | BE-14, BE-30 |
-| BE-16 | pytest: CRUD tasks + presets | BE-13, BE-15 |
+| BE-16 ✅ | pytest: CRUD tasks + presets (integração com Postgres real) | BE-13, BE-15 |
 | BE-17 | RabbitMQ + Celery + Celery Beat | BE-2 |
 | BE-18 | Model `FocusSession` | BE-5, BE-12 |
 | BE-19 | Endpoints iniciar/pausar/finalizar sessão | BE-18, BE-30 |
@@ -199,8 +199,14 @@ tasks/presets, E5-x = pomodoro/stats/celery, E6-x = salas).
 
 ## Decisões já tomadas (não refazer)
 
-- Testes não usam banco: `tests/conftest.py` define `DATABASE_URL`/`REDIS_URL` fake (o CI não
-  tem `.env`) e os testes de rota sobrescrevem `get_db` e trocam o service por fake em memória.
+- Testes unitários não usam banco: `tests/conftest.py` define `DATABASE_URL`/`REDIS_URL` fake (o CI
+  não tem `.env`) e os testes de rota sobrescrevem `get_db` e trocam o service por fake em memória.
+- Testes de integração (BE-16) em `tests/integration/` (marker `integration`) usam Postgres real via
+  `TEST_DATABASE_URL` (banco `*_test`, criado e recriado com `create_all`, TRUNCATE entre testes;
+  nunca toca o banco de dev). Sem a variável, pulam com mensagem. O CI tem service `postgres:16-alpine`
+  e define a variável, então rodam lá. Async via plugin `anyio` (sem pytest-asyncio). No Windows,
+  rodar dentro da rede do compose (ver `commands.md`). Novos tickets com SQL (BE-19/20) devem
+  ganhar testes aqui.
 - Pacotes de `app/` são namespace packages (sem `__init__.py`), exceto `app/models`.
 
 - `DATABASE_URL` usa `postgresql://` (funciona em qualquer cliente); o código converte para
