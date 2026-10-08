@@ -7,6 +7,9 @@ import Typography from '@mui/material/Typography';
 import { Maximize2, Pause, Play } from 'lucide-react';
 import { useState } from 'react';
 import { SOUNDS } from '@/audio';
+import { SceneChips } from '@/features/scenes/SceneChips';
+import { SceneNameDialog } from '@/features/scenes/SceneNameDialog';
+import { useSceneControl } from '@/features/scenes/useSceneControl';
 import { MixerSheet } from './MixerSheet';
 import { SoundCard } from './SoundCard';
 import { arrowKeyHandler, sceneCaption } from './mixerState';
@@ -26,6 +29,8 @@ export function AmbienceStrip() {
   const mixer = useMixer();
   const { levels, master, playing, setLevel, setMaster, toggle, toggleSound } = mixer;
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const scenes = useSceneControl(mixer);
 
   return (
     <Paper
@@ -81,7 +86,7 @@ export function AmbienceStrip() {
             aria-live="polite"
             sx={{ color: 'text.secondary', fontSize: 11.5 }}
           >
-            {sceneCaption(levels, playing)}
+            {sceneCaption(scenes.label, levels, playing)}
           </Typography>
         </Box>
 
@@ -177,7 +182,54 @@ export function AmbienceStrip() {
           />
         ))}
       </Box>
-      <MixerSheet open={sheetOpen} onClose={() => setSheetOpen(false)} mixer={mixer} />
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: { xs: '8px', sm: '14px' },
+        }}
+      >
+        <Typography
+          component="h3"
+          sx={{
+            color: 'text.secondary',
+            fontFamily: 'Quicksand, sans-serif',
+            fontSize: 11.5,
+            fontWeight: 600,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Scenes
+        </Typography>
+        <SceneChips
+          presets={scenes.presets}
+          current={scenes.current}
+          onLoad={scenes.load}
+          onSave={() => setSaving(true)}
+          onRename={scenes.rename}
+          onDelete={scenes.remove}
+        />
+      </Box>
+      <SceneNameDialog
+        open={saving}
+        title="Save this mix"
+        confirmLabel="Save"
+        initialName=""
+        onClose={() => setSaving(false)}
+        onSubmit={(name) => {
+          scenes.saveCurrent(name);
+          setSaving(false);
+        }}
+      />
+      <MixerSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        mixer={mixer}
+        scene={scenes.label}
+      />
     </Paper>
   );
 }

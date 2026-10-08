@@ -19,8 +19,9 @@ const NUMBER_WORDS = ['None', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
 export const openCountWord = (count: number): string => NUMBER_WORDS[count] ?? String(count);
 
 /**
- * Scene label until real scenes exist (FL-9): the opening mix keeps its seed name, any
- * other combination is a custom mix.
+ * Fallback scene label while saved scenes are not loaded (offline / first fetch): the
+ * opening mix keeps its seed name, any other combination is a custom mix. Once scenes are
+ * loaded the label comes from `currentScene` (features/scenes).
  */
 export const SEED_SCENE = 'Rainy Reading Room';
 export const CUSTOM_SCENE = 'Custom mix';
@@ -29,8 +30,8 @@ export const sceneName = (levels: Levels): string =>
   SOUND_IDS.every((id) => levels[id] === DEFAULT_LEVELS[id]) ? SEED_SCENE : CUSTOM_SCENE;
 
 /** Live caption: "{scene} · {n} of six open"; paused always reads "Paused". */
-export const sceneCaption = (levels: Levels, playing: boolean): string =>
-  `${playing ? sceneName(levels) : 'Paused'} · ${openCountWord(countOpen(levels))} of six open`;
+export const sceneCaption = (scene: string, levels: Levels, playing: boolean): string =>
+  `${playing ? scene : 'Paused'} · ${openCountWord(countOpen(levels))} of six open`;
 
 /** "66%" or "off" (level 0 or paused). */
 export const formatLevel = (level: number, playing: boolean): string =>

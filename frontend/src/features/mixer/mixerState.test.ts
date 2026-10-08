@@ -39,11 +39,15 @@ describe('open count and caption', () => {
   });
 
   it('builds the caption and shows Paused when stopped', () => {
-    expect(sceneCaption(DEFAULT_LEVELS, true)).toBe('Rainy Reading Room · Three of six open');
-    expect(sceneCaption({ ...DEFAULT_LEVELS, fire: 10 }, true)).toBe(
+    expect(sceneCaption('Rainy Reading Room', DEFAULT_LEVELS, true)).toBe(
+      'Rainy Reading Room · Three of six open',
+    );
+    expect(sceneCaption('Custom mix', { ...DEFAULT_LEVELS, fire: 10 }, true)).toBe(
       'Custom mix · Four of six open',
     );
-    expect(sceneCaption(DEFAULT_LEVELS, false)).toBe('Paused · Three of six open');
+    expect(sceneCaption('Rainy Reading Room', DEFAULT_LEVELS, false)).toBe(
+      'Paused · Three of six open',
+    );
   });
 });
 
