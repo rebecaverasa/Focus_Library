@@ -6,15 +6,17 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { Plus } from 'lucide-react';
 import { TaskRow } from './TaskRow';
-import { dayLabel, emptyDayName, leftCount } from './taskState';
+import { DayPicker } from './DayPicker';
+import { emptyDayName, leftCount } from './taskState';
 import { useTasks } from './useTasks';
 
 interface TaskListProps {
-  /** ISO YYYY-MM-DD. Owned by the parent so the day picker (FL-8) can drive it. */
+  /** ISO YYYY-MM-DD. Owned by the parent; the day picker in the header changes it. */
   date: string;
+  onDateChange: (date: string) => void;
 }
 
-export function TaskList({ date }: TaskListProps) {
+export function TaskList({ date, onDateChange }: TaskListProps) {
   const { query, add, toggle, remove } = useTasks(date);
   const [title, setTitle] = useState('');
   const tasks = query.data ?? [];
@@ -28,13 +30,10 @@ export function TaskList({ date }: TaskListProps) {
 
   return (
     <Box component="section" aria-labelledby="task-list-title" sx={{ minWidth: 0 }}>
-      <Box
-        sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 2 }}
-      >
-        {/* FL-8 turns this heading into the day picker button. */}
-        <Typography id="task-list-title" variant="h4" component="h2" sx={{ fontSize: 26 }}>
-          {dayLabel(date)}
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+        <Box id="task-list-title" component="h2" sx={{ m: 0, minWidth: 0 }}>
+          <DayPicker date={date} onSelect={onDateChange} />
+        </Box>
         <Typography
           variant="caption"
           aria-live="polite"

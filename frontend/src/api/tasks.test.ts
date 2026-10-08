@@ -42,4 +42,12 @@ describe('tasks api', () => {
     expect(sent[1].method).toBe('delete');
     expect(sent[1].url).toBe('/tasks/abc');
   });
+
+  it('lists note counts by month', async () => {
+    const { listTaskDays } = await import('./tasks');
+    await listTaskDays('2026-10');
+    expect(sent[0].method).toBe('get');
+    expect(sent[0].url).toBe('/tasks/days');
+    expect(sent[0].params).toEqual({ month: '2026-10' });
+  });
 });

@@ -35,3 +35,14 @@ export async function updateTask(id: string, patch: TaskPatch): Promise<Task> {
 export async function deleteTask(id: string): Promise<void> {
   await http.delete(`/tasks/${id}`);
 }
+
+export interface TaskDayCount {
+  date: string;
+  count: number;
+}
+
+/** Days of a month (YYYY-MM) that hold notes; days without notes are omitted by the API. */
+export async function listTaskDays(month: string): Promise<TaskDayCount[]> {
+  const { data } = await http.get<TaskDayCount[]>('/tasks/days', { params: { month } });
+  return data;
+}
