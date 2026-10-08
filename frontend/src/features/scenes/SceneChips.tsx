@@ -13,6 +13,18 @@ import { barHeight, presetLevels } from './sceneState';
 
 const FADE = '420ms cubic-bezier(0.4, 0, 0.2, 1)';
 const CHIP_HEIGHT = { xs: 44, sm: 36 };
+// Chip is 36px from sm up; this grows the clickable box to 44px without changing the look.
+const CHIP_HIT = {
+  position: 'relative',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: { xs: -2, sm: -5 },
+    bottom: { xs: -2, sm: -5 },
+    left: 0,
+    right: 0,
+  },
+} as const;
 
 /** Six 3px bars from the saved levels (not the live ones); terracotta when the layer is open. */
 function Sparkline({ preset }: { preset: Preset }) {
@@ -70,7 +82,8 @@ export function SceneChips({
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        gap: '8px',
+        // 10px between wrapped rows so the 44px hit areas of neighbours do not overlap.
+        gap: '10px 8px',
         m: 0,
         p: 0,
         listStyle: 'none',
@@ -106,6 +119,7 @@ export function SceneChips({
               onClick={() => onLoad(preset)}
               aria-pressed={loaded}
               sx={{
+                ...CHIP_HIT,
                 alignSelf: 'stretch',
                 minWidth: 0,
                 gap: '9px',
@@ -131,8 +145,9 @@ export function SceneChips({
               aria-label={`Options for ${preset.name}`}
               aria-haspopup="menu"
               sx={{
+                ...CHIP_HIT,
                 alignSelf: 'stretch',
-                width: { xs: 40, sm: 30 },
+                width: 44,
                 flexShrink: 0,
                 borderRadius: '0 999px 999px 0',
                 color: 'text.secondary',
@@ -147,6 +162,7 @@ export function SceneChips({
         <ButtonBase
           onClick={onSave}
           sx={{
+            ...CHIP_HIT,
             height: CHIP_HEIGHT,
             px: '14px',
             borderRadius: 999,

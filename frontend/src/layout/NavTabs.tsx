@@ -25,11 +25,22 @@ export function NavTabs() {
           component={Link}
           to={item.path}
           sx={{
-            minHeight: 0,
             minWidth: 0,
             px: { xs: 1.25, sm: 1.5 },
+            // 44px target; the 31px pill is drawn by ::before so the look stays as designed.
+            minHeight: 44,
+            position: 'relative',
+            isolation: 'isolate',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              inset: '6.5px 0',
+              zIndex: -1,
+              borderRadius: 999,
+              transition: 'inherit',
+            },
+            '&.Mui-selected::before': { backgroundColor: 'primary.light' },
             whiteSpace: 'nowrap',
-            py: 0.75,
             lineHeight: 1.4,
             fontWeight: 500,
             transition: (theme) =>
@@ -37,7 +48,7 @@ export function NavTabs() {
                 duration: theme.transitions.duration.standard,
               }),
             '&:hover': { color: 'text.primary' },
-            '&.Mui-selected': { fontWeight: 600 },
+            '&.Mui-selected': { fontWeight: 600, backgroundColor: 'transparent' },
           }}
         />
       ))}

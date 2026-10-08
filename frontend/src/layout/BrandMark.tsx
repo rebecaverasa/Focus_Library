@@ -12,7 +12,15 @@ export function BrandMark() {
       component={Link}
       to="/"
       aria-label="Focus Library, go to The room"
-      sx={{ alignItems: 'center', color: 'text.primary', textDecoration: 'none', borderRadius: 1 }}
+      sx={{
+        alignItems: 'center',
+        color: 'text.primary',
+        textDecoration: 'none',
+        borderRadius: 1,
+        minHeight: 44,
+        // Mark alone is 28px wide on phones; pad the link to a 44px target.
+        px: { xs: '8px', sm: 0 },
+      }}
     >
       <Box
         aria-hidden

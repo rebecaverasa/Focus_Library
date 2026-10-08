@@ -47,6 +47,8 @@ export function SoundCard({ sound, level, playing, onChange, onToggle }: SoundCa
             transition: `color ${FADE}`,
             // Taller hit area than the 5px rail so the pointer has room.
             py: '8px',
+            // Rail + thumb are ~22px tall; grow the pointer target to 44px.
+            '&::after': { content: '""', position: 'absolute', inset: '-11px 0' },
           },
           '& .MuiSlider-rail, & .MuiSlider-track': { height: 5, borderRadius: '3px' },
           '& .MuiSlider-track': { transition: 'none' },

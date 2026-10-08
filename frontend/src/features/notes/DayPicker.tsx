@@ -23,6 +23,8 @@ import { dayLabel, todayISO } from './taskState';
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 // DESIGN.md: below 720px the picker becomes a full-width Dialog.
 const COMPACT = '(max-width:719.95px)';
+// Touch tablets get 44px cells (and a wider popover) even above 720px.
+const TOUCH = '(pointer: coarse)';
 
 interface DayPickerProps {
   /** Selected ISO day. */
@@ -34,6 +36,7 @@ interface DayPickerProps {
 export function DayPicker({ date, onSelect }: DayPickerProps) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const compact = useMediaQuery(COMPACT);
+  const touch = useMediaQuery(TOUCH);
   const open = Boolean(anchor);
   const close = () => setAnchor(null);
 
@@ -42,7 +45,7 @@ export function DayPicker({ date, onSelect }: DayPickerProps) {
     close();
   };
 
-  const body = <CalendarBody date={date} compact={compact} onPick={pick} />;
+  const body = <CalendarBody date={date} compact={compact || touch} onPick={pick} />;
 
   return (
     <>
@@ -101,7 +104,7 @@ export function DayPicker({ date, onSelect }: DayPickerProps) {
           slotProps={{
             paper: {
               'aria-label': 'Choose a day',
-              sx: { width: 286, mt: 1, borderRadius: '16px', boxShadow: 3 },
+              sx: { width: touch ? 344 : 286, mt: 1, borderRadius: '16px', boxShadow: 3 },
             },
           }}
         >
@@ -228,6 +231,8 @@ function CalendarBody({ date, compact, onPick }: CalendarBodyProps) {
           onClick={() => onPick(today)}
           sx={(t) => ({
             minHeight: compact ? 44 : 28,
+            position: 'relative',
+            '&::after': { content: '""', position: 'absolute', inset: '-8px 0' },
             px: 1.75,
             borderRadius: 999,
             border: '1px solid',
@@ -263,6 +268,9 @@ function MonthArrow(props: {
         border: '1px solid',
         borderColor: 'divider',
         color: 'text.secondary',
+        // Mouse layout keeps the 28px button; the pseudo-element grows the click target to 44px.
+        position: 'relative',
+        '&::after': { content: '""', position: 'absolute', inset: -8 },
       }}
     >
       {props.children}
