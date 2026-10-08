@@ -53,8 +53,8 @@ backend/
 │   │   └── session.py     engine async, AsyncSessionLocal, dependency get_db()
 │   ├── api/deps.py        get_client / CurrentClient (X-Client-Id → upsert do Client)
 │   ├── api/routes/        routers por recurso (clients.py: GET /clients/me)
-│   ├── models/            models SQLAlchemy; __init__.py importa todos (client.py: Client, task.py: Task)
-│   ├── schemas/           schemas Pydantic de entrada/saída (client.py: ClientRead, task.py: TaskRead)
+│   ├── models/            models SQLAlchemy; __init__.py importa todos (client.py: Client, task.py: Task, preset.py: Preset)
+│   ├── schemas/           schemas Pydantic de entrada/saída (client.py: ClientRead, task.py: TaskRead, preset.py: PresetRead/PresetCreate)
 │   └── services/          regras de negócio (clients.py: upsert_client com ON CONFLICT)
 ├── alembic/               env.py async (importa app.models); versions/: 0f53c8e00b90 clients, 276a2b91c20b tasks
 ├── tests/                 conftest.py (env fake p/ CI sem .env), test_main, test_db_schema, test_clients
@@ -142,6 +142,9 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 - **Preset (cena)**: `name` + seis níveis 0–100 com ids fixos: pages, rain, clock, whispers,
   fire, keys. Seeds: Rainy Reading Room (rain 66 / pages 34 / clock 24), Fireside Night
   (fire 74 / rain 40 / pages 12), Quiet Stacks (keys 46 / whispers 38 / pages 20 / clock 16).
+  **Model pronto (BE-14):** tabela `presets` = `client_id` (FK CASCADE, índice), `name` (String 60) e uma
+  coluna Integer NOT NULL (default 0) por som, cada uma com CHECK 0..100. `PresetRead` (sem `client_id`) e
+  `PresetCreate` (nome trimado 1..60, seis níveis obrigatórios, extras proibidos). CRUD = BE-15.
 - **FocusSession**: task, duração, started/ended_at; foco padrão 25 / pausa 5. Completar a
   tarefa encerra a sessão e loga os minutos.
 - **Stats**: totais diários de foco dos últimos 7 dias, total, média diária, nº de sessões,
@@ -162,7 +165,7 @@ Dados que a UI precisa (DESIGN.md §"State"/"Fetching"):
 | BE-30 ✅ | Identificação anônima: header `X-Client-Id`, model `Client`, dependency `get_client` | BE-5 |
 | BE-12 ✅ | Model `Task` (por data, client_id, mins) | BE-5, BE-30 |
 | BE-13 ✅ | CRUD `/tasks` (GET por data, POST, PATCH, DELETE) | BE-12, BE-30 |
-| BE-14 | Model `Preset` (nome + 6 níveis, por client_id) | BE-5, BE-30 |
+| BE-14 ✅ | Model `Preset` (nome + 6 níveis, por client_id) | BE-5, BE-30 |
 | BE-15 | CRUD `/presets` | BE-14, BE-30 |
 | BE-16 | pytest: CRUD tasks + presets | BE-13, BE-15 |
 | BE-17 | RabbitMQ + Celery + Celery Beat | BE-2 |
