@@ -36,6 +36,20 @@ pip freeze > requirements.txt
 - python -m pytest         (use `-m pytest`, not the bare `pytest` command —
   it's what puts backend/ on sys.path so `from app... import` resolves)
 
+## integration tests (real Postgres)
+
+tests/integration/ runs the services and routes against a real database. They are skipped
+(with a message) unless TEST_DATABASE_URL is set; the database name must end in `_test`
+and is created automatically, with the schema rebuilt from the models on each run. It never
+touches the dev database.
+
+- Linux/macOS/CI (db published on localhost):
+  TEST_DATABASE_URL=postgresql://focus:change-me@localhost:5432/focus_library_test python -m pytest
+- Windows host: asyncpg -> Docker Desktop port fails (see NOTE below), so run inside the
+  compose network instead (URL-encode special characters in the password):
+  docker run --rm --network docker_default -v "$(pwd -W):/work" -w /work     -e DATABASE_URL=postgresql://x:x@db/x -e REDIS_URL=redis://redis:6379/0     -e TEST_DATABASE_URL=postgresql://focus:<password>@db:5432/focus_library_test     --entrypoint sh docker-api -c "pip install -q pytest==8.3.4 httpx==0.28.1 && python -m pytest"
+  (use MSYS_NO_PATHCONV=1 in Git Bash)
+
 ## alembic migrations
 
 DATABASE_URL/REDIS_URL come from backend/.env (host) — copy backend/.env.example first.
