@@ -28,10 +28,10 @@ export function MixerSheet({ open, onClose, mixer, scene }: MixerSheetProps) {
       anchor="bottom"
       open={open}
       onClose={onClose}
-      aria-labelledby={TITLE_ID}
       transitionDuration={{ enter: 420, exit: 300 }}
       slotProps={{
         paper: {
+          'aria-labelledby': TITLE_ID,
           sx: {
             // Fixed + left/right 0 + auto margins centres the 760px sheet.
             width: 760,
@@ -151,7 +151,8 @@ function SoundRow({ sound, level, playing, onChange, onToggle }: SoundRowProps) 
       {/* Sibling of the slider, so dragging the rail never toggles the row. */}
       <ButtonBase
         onClick={onToggle}
-        aria-label={`${level > 0 ? 'Mute' : 'Unmute'} ${sound.label}`}
+        // No aria-label: the name is the visible text (WCAG 2.5.3); pressed = sound is on.
+        aria-pressed={level > 0}
         sx={{
           gridColumn: { xs: '1', sm: '1 / 3' },
           display: 'grid',

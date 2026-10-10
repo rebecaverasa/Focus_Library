@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { keyDelta, monthCells, monthLabel, monthOf, shiftDay, shiftMonth } from './calendarState';
+import {
+  keyDelta,
+  monthCells,
+  monthLabel,
+  monthOf,
+  monthWeeks,
+  shiftDay,
+  shiftMonth,
+} from './calendarState';
 
 describe('calendarState', () => {
   it('derives and shifts month keys across years', () => {
@@ -34,5 +42,13 @@ describe('calendarState', () => {
     expect(keyDelta('ArrowLeft')).toBe(-1);
     expect(keyDelta('ArrowDown')).toBe(7);
     expect(keyDelta('Enter')).toBeNull();
+  });
+
+  it('splits the grid into rows of 7 that keep every day exactly once', () => {
+    const weeks = monthWeeks('2026-08');
+    expect(weeks).toHaveLength(6);
+    expect(weeks.slice(0, -1).every((w) => w.length === 7)).toBe(true);
+    expect(weeks.flat().filter((c) => c !== null)).toHaveLength(31);
+    expect(weeks[0][5]).toBe('2026-08-01');
   });
 });

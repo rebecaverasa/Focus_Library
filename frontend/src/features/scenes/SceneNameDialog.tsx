@@ -4,7 +4,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { MAX_NAME, cleanName } from './sceneState';
 
@@ -26,16 +26,19 @@ export function SceneNameDialog({
   onClose,
   onSubmit,
 }: SceneNameDialogProps) {
+  const titleId = useId();
   return (
     <Dialog
       open={open}
       onClose={onClose}
+      aria-labelledby={titleId}
       fullWidth
       maxWidth="xs"
       slotProps={{ paper: { sx: { borderRadius: '18px', m: 2, width: 'calc(100% - 32px)' } } }}
     >
       {open && (
         <NameForm
+          titleId={titleId}
           title={title}
           confirmLabel={confirmLabel}
           initialName={initialName}
@@ -48,13 +51,22 @@ export function SceneNameDialog({
 }
 
 function NameForm({
+  titleId,
   title,
   confirmLabel,
   initialName,
   onClose,
   onSubmit,
-}: Omit<SceneNameDialogProps, 'open'>) {
+}: Omit<SceneNameDialogProps, 'open'> & { titleId: string }) {
   const [value, setValue] = useState(initialName);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Opened with Enter, the modal's focus trap restores the opener right after autoFocus ran;
+  // a macrotask later the trap has settled and the field can keep focus.
+  useEffect(() => {
+    const id = window.setTimeout(() => inputRef.current?.focus(), 0);
+    return () => window.clearTimeout(id);
+  }, []);
   const name = cleanName(value);
 
   const submit = (event: FormEvent) => {
@@ -64,12 +76,12 @@ function NameForm({
 
   return (
     <form onSubmit={submit}>
-      <DialogTitle component="h2" variant="h4" sx={{ fontSize: 22 }}>
+      <DialogTitle id={titleId} component="h2" variant="h4" sx={{ fontSize: 22 }}>
         {title}
       </DialogTitle>
       <DialogContent>
         <TextField
-          autoFocus
+          inputRef={inputRef}
           fullWidth
           label="Scene name"
           value={value}

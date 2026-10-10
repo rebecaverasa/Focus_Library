@@ -24,21 +24,22 @@ export function BrandMark() {
     >
       <Box
         aria-hidden
+        // Drawn by CSS so the link's visible text is just the wordmark (label-in-name).
         sx={{
+          '&::before': { content: '"FL"' },
           width: 28,
           height: 28,
           borderRadius: '10px',
           bgcolor: 'primary.light',
-          color: 'primary.main',
+          color: (t) =>
+            t.palette.mode === 'light' ? t.palette.primary.dark : t.palette.primary.main,
           display: 'grid',
           placeItems: 'center',
           fontFamily: (theme) => theme.typography.h5.fontFamily,
           fontWeight: 700,
           fontSize: 12.5,
         }}
-      >
-        FL
-      </Box>
+      />
       <Typography
         component="span"
         sx={{
